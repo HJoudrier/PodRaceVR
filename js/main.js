@@ -141,8 +141,15 @@ function onXREnd() {
 }
 
 // ------------------------------------------------------------------ hangar
+function disposeShowroom() {
+  if (!showroom) return;
+  scene.remove(showroom.pod.root);
+  scene.remove(showroom.pod.shadow);
+  showroom.pod.root.traverse((o) => { if (o.geometry) o.geometry.dispose(); });
+}
+
 function setShowroomPod(id) {
-  if (showroom) { scene.remove(showroom.pod.root); scene.remove(showroom.pod.shadow); }
+  disposeShowroom();
   const def = PODS.find((p) => p.id === id) || PODS[0];
   const pod = buildPod(def.look, {});
   const smp = track.sample(75, 0);
@@ -211,7 +218,8 @@ function startRace(vr) {
 
 function beginRace() {
   endRace();
-  if (showroom) { scene.remove(showroom.pod.root); scene.remove(showroom.pod.shadow); showroom = null; }
+  disposeShowroom();
+  showroom = null;
   effects.clear();
   race = new Race({ scene, track, env, effects, audio, raiders, settings, hud, cockpitHud });
   const pm = race.player.model;

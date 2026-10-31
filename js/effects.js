@@ -12,9 +12,12 @@ const VERT = `
   void main() {
     vec4 mv = modelViewMatrix * vec4(position, 1.0);
     gl_Position = projectionMatrix * mv;
-    gl_PointSize = min(512.0, psize * uScale * projectionMatrix[1][1] / max(0.2, -mv.z));
+    float dist = -mv.z;
+    // les particules très proches de l'œil disparaissent (confort VR + coût de remplissage)
+    float nearFade = smoothstep(1.2, 6.0, dist);
+    gl_PointSize = min(420.0, psize * nearFade * uScale * projectionMatrix[1][1] / max(0.2, dist));
     vColor = pcolor;
-    vAlpha = palpha;
+    vAlpha = palpha * nearFade;
   }`;
 const FRAG = `
   varying vec3 vColor;

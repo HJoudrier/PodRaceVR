@@ -297,7 +297,7 @@ export class CockpitHud {
     if (this.alertTimer > 0) this.alertTimer -= dt;
     this.timer -= dt;
     if (this.timer > 0) return;
-    this.timer = 1 / 12;
+    this.timer = 1 / 10;
     this.drawDash(race, inputSource);
   }
 

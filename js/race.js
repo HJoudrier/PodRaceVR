@@ -401,7 +401,9 @@ export class Race {
         while (r._dustAcc > 1) {
           r._dustAcc -= 1;
           const f = r.forward(_v);
-          _v2.set(r.pos.x + f.x * 5, r.groundY + 0.3, r.pos.z + f.z * 5);
+          // joueur : derrière le cockpit pour ne pas traverser sa propre caméra
+          const off = r.isPlayer ? -7 : 5;
+          _v2.set(r.pos.x + f.x * off, r.groundY + 0.3, r.pos.z + f.z * off);
           fx.dust(_v2, r.vel, r.offTrack ? 1.4 : 0.8);
         }
       }
