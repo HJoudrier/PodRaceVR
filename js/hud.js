@@ -12,7 +12,7 @@ function healthColor(h) {
 }
 
 function repairKeyName(source) {
-  if (source === 'xr') return 'X (ou gâchette latérale)';
+  if (source === 'xr') return 'X';
   if (source === 'gamepad') return 'X';
   return 'R';
 }
@@ -26,7 +26,6 @@ export class Hud {
       lapTime: $('hud-laptime'), best: $('hud-best'), speed: $('hud-speed'), speedBar: $('hud-speedbar'),
       heat: $('hud-heat'), boost: $('hud-boost'), damage: $('hud-damage'), repair: $('hud-repair'),
       msg: $('hud-msg'), msgSub: $('hud-msgsub'), alert: $('hud-alert'), wrong: $('hud-wrongway'), map: $('hud-map'),
-      standings: $('hud-standings'),
     };
     this.rows = {};
     this.el.damage.innerHTML = '';

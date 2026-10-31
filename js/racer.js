@@ -273,20 +273,6 @@ export class Racer {
     const kAhead = track.curvAt(s + 60);
     let target = -Math.sign(kAhead) * clamp(Math.abs(kAhead) * 260, 0, 1) * (e - 6) + ai.offset + (ai.mistake || 0);
 
-    // piliers d'arches et rochers
-    for (const ob of track.obstacles) {
-      let ds = ob.s - s;
-      if (ds < -L / 2) ds += L;
-      if (ds < 0 || ds > 140) continue;
-      if (Math.abs(ob.lat) > e + ob.r) continue;
-      const clear = ob.r + FRONT_R + 2.5;
-      if (Math.abs(target - ob.lat) < clear) {
-        const left = ob.lat - clear, right = ob.lat + clear;
-        const canL = left > -lim, canR = right < lim;
-        if (canL && (!canR || Math.abs(lat - left) < Math.abs(lat - right))) target = left;
-        else if (canR) target = right;
-      }
-    }
     // autres concurrents : dépasser par le côté le plus libre, sinon ne pas leur rentrer dedans
     if (race) {
       for (const o of race.racers) {
@@ -307,6 +293,42 @@ export class Racer {
           const os = Math.max(0, o.speed);
           vt = Math.min(vt, Math.sqrt(os * os + 2 * brake * Math.max(0, ds - 17)));
         }
+      }
+    }
+    // piliers d'arches et rochers (prioritaires sur tout le reste) : on choisit la trajectoire libre
+    // la plus proche de la trajectoire souhaitée, en tenant compte de tous les obstacles à venir
+    const obsIn = this._obsIn || (this._obsIn = []);
+    obsIn.length = 0;
+    for (const ob of track.obstacles) {
+      let ds = ob.s - s;
+      if (ds < -L / 2) ds += L;
+      if (ds > L / 2) ds -= L;
+      if (ds < -4 || ds > 230) continue;
+      if (Math.abs(ob.lat) > e + ob.r) continue;
+      obsIn.push({ ob, ds, clear: ob.r + FRONT_R + 2.5 });
+    }
+    if (obsIn.length) {
+      // on ne combine que les obstacles proches les uns des autres (les suivants seront traités ensuite)
+      obsIn.sort((a, b) => a.ds - b.ds);
+      const horizon = obsIn[0].ds + 90;
+      while (obsIn.length && obsIn[obsIn.length - 1].ds > horizon) obsIn.pop();
+      const ok = (c) => c >= -lim && c <= lim && obsIn.every((o) => Math.abs(c - o.ob.lat) >= o.clear);
+      if (!ok(target)) {
+        let best = null, bc = Infinity;
+        const tryC = (c) => {
+          if (!ok(c)) return;
+          const cost = Math.abs(c - target) + 0.6 * Math.abs(c - lat);
+          if (cost < bc) { bc = cost; best = c; }
+        };
+        for (const o of obsIn) { tryC(o.ob.lat - o.clear); tryC(o.ob.lat + o.clear); }
+        tryC(-lim); tryC(lim); tryC(0);
+        if (best === null) {
+          // aucune ligne totalement libre : on évite au moins l'obstacle le plus proche
+          const o = obsIn[0];
+          const left = o.ob.lat - o.clear, right = o.ob.lat + o.clear;
+          best = left > -lim && (right > lim || Math.abs(lat - left) < Math.abs(lat - right)) ? left : right;
+        }
+        target = best;
       }
     }
     return { vt, vmax, targetLat: clamp(target, -lim, lim), lim, here, brake };
@@ -373,8 +395,8 @@ export class Racer {
     this.boost = false;
     ai.targetLat = plan.targetLat;
 
-    const latAccMax = 30 + 25 * (ph.turnRate - 0.9);
-    let la = (ai.targetLat - ai.lat) * 3.2 - ai.latVel * 2.6;
+    const latAccMax = 48 + 30 * (ph.turnRate - 0.9);
+    let la = (ai.targetLat - ai.lat) * 6 - ai.latVel * 3.9;
     la = clamp(la, -latAccMax, latAccMax);
     // direction bloquée : dérive
     la += dmg.jam * 10;

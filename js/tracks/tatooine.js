@@ -53,9 +53,8 @@ export const TATOOINE = {
     { at: 1.6, lat: 11, r: 2.6 },
     { at: 14.4, lat: -9, r: 3.0 },
     { at: 15.3, lat: 8, r: 2.8 },
-    { at: 23.1, lat: -12, r: 3.2 },
-    { at: 23.45, lat: 7, r: 3.4 },
-    { at: 23.8, lat: -4, r: 2.6 },
+    { at: 22.75, lat: -10, r: 3.2 },
+    { at: 23.45, lat: 9, r: 3.4 },
   ],
   theme: {
     skyTop: 0x3f86d8,

@@ -244,7 +244,7 @@ function applyCameraMode(snap = false) {
     camera.rotation.set(0, 0, 0);
   } else {
     scene.add(camera);
-    if (snap) cam.yaw = race.player.yaw;
+    if (snap) { cam.yaw = race.player.yaw; cam.y = 0; cam.hint = race.player.hint; }
   }
   cam.fov = cockpit ? 82 : 72;
 }
@@ -319,6 +319,18 @@ function updateCamera(dt) {
       const targetY = p.pos.y + 4.4 - sf * 0.6;
       cam.y = cam.y ? damp(cam.y, targetY, 8, dt) : targetY;
       camera.position.set(p.pos.x + bx * dist, cam.y, p.pos.z + bz * dist);
+      // la caméra reste dans le canyon (pas de vue à travers la roche)
+      const q = track.query(camera.position.x, camera.position.z, cam.hint ?? p.hint, cam.q || (cam.q = {}));
+      cam.hint = q.index;
+      if (q.wallH > 5) {
+        const lim = q.width / 2 - 1.2;
+        if (Math.abs(q.lateral) > lim) {
+          const over = (Math.abs(q.lateral) - lim) * Math.sign(q.lateral);
+          camera.position.x -= q.rx * over;
+          camera.position.z -= q.rz * over;
+        }
+      }
+      if (camera.position.y < q.y + 1.5) camera.position.y = q.y + 1.5;
       camera.position.x += (Math.random() - 0.5) * shake * 0.5;
       camera.position.y += (Math.random() - 0.5) * shake * 0.5 + Math.sin(race.time * 41) * sf * 0.03;
       tmpV.set(p.pos.x - bx * 12, p.pos.y + 1.2, p.pos.z - bz * 12);

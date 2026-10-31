@@ -227,13 +227,14 @@ export class Effects {
       const rx = p.x - camPos.x, ry = p.y - camPos.y, rz = p.z - camPos.z;
       const along = rx * f.x + ry * f.y + rz * f.z;
       if (along < -6 || rx * rx + ry * ry + rz * rz > 260 * 260) {
-        const a = Math.random() * Math.PI * 2;
-        const rad = 3.5 + Math.random() * 24;
+        // tranche horizontale autour du pilote : sur les côtés et près du sol (pas de « pluie » dans le ciel)
+        const side = Math.random() < 0.5 ? -1 : 1;
+        const lat = side * (2.5 + Math.random() * 22);
         const dist = 25 + Math.random() * 170;
         p.set(
-          camPos.x + f.x * dist + r.x * Math.cos(a) * rad,
-          camPos.y + f.y * dist + Math.sin(a) * rad * 0.55,
-          camPos.z + f.z * dist + r.z * Math.cos(a) * rad
+          camPos.x + f.x * dist + r.x * lat,
+          groundY + 0.4 + Math.random() * Math.random() * 14,
+          camPos.z + f.z * dist + r.z * lat
         );
         if (p.y < groundY + 0.3) p.y = groundY + 0.3 + Math.random() * 2;
       }
