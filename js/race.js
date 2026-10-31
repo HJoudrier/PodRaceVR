@@ -32,6 +32,8 @@ export class Race {
     this.finishOrder = [];
     this.archIndex = 0;
     this.endTimer = 0;
+    this.haptic = null;   // vibration du téléphone (branchée par main.js)
+    this.fxScale = 1;     // densité des particules selon la qualité graphique
     this.build();
   }
 
@@ -105,6 +107,7 @@ export class Race {
     else { const r = racer.right(new THREE.Vector3()); _v2.addScaledVector(r, side * 2.5).addScaledVector(fwd, -4); }
     this.effects.sparks(_v2, null, Math.min(40, 8 + amount), 25);
     if (racer.isPlayer) {
+      if (this.haptic) this.haptic(Math.round(clamp(15 + amount * 1.5, 15, 90)));
       this.audio.hit(clamp(amount / 40, 0.1, 1));
       this.shake = Math.max(this.shake || 0, clamp(amount / 30, 0.2, 1));
       if (amount > 12) this.flashDamage = 0.5;
@@ -129,6 +132,7 @@ export class Race {
     this.effects.sparks(point, null, 25, 30);
     this.effects.flash(point, 0xff6a30, 7);
     if (racer.isPlayer) {
+      if (this.haptic) this.haptic([45, 30, 45]);
       this.audio.blasterHit();
       this.shake = Math.max(this.shake || 0, 0.6);
       this.flashDamage = 0.6;
@@ -146,6 +150,7 @@ export class Race {
       this.effects.explosion(racer.pos.clone().addScaledVector(racer.forward(_v), 4));
       this.audio.explosion(racer.pos);
       if (racer.isPlayer) {
+        if (this.haptic) this.haptic([200, 80, 300]);
         this.hud.message('POD DÉTRUIT', 'Les droïdes réparent… retour en piste', 2.8, 'danger');
         this.cockpitHud.message('POD DÉTRUIT', 'Retour en piste…', 2.8, '#ff6644');
       }
@@ -396,7 +401,7 @@ export class Race {
       // panache de poussière soulevé par les réacteurs
       const near = r.isPlayer || r.pos.distanceToSquared(this.player.pos) < 400 * 400;
       if (near && spd > 20) {
-        const rate = spd * (r.offTrack ? 0.6 : 0.22) * (r.isPlayer ? 0.6 : 1);
+        const rate = spd * (r.offTrack ? 0.6 : 0.22) * (r.isPlayer ? 0.6 : 1) * this.fxScale;
         r._dustAcc = (r._dustAcc || 0) + rate * dt;
         while (r._dustAcc > 1) {
           r._dustAcc -= 1;

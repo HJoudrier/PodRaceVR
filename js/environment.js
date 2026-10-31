@@ -263,6 +263,7 @@ export class Environment {
     }
     mesh.count = n;
     out.count = n;
+    this.rockOutline = out;
     this.group.add(mesh, out);
   }
 

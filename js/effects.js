@@ -142,6 +142,12 @@ export class Effects {
     this._z = new THREE.Vector3(0, 0, 1); this._d = new THREE.Vector3();
   }
 
+  // 0.5 (basse) .. 1 (haute) : nombre de lignes de vitesse
+  setQuality(f) {
+    this.quality = f;
+    this.lines.count = Math.round(this.LINES * (0.45 + 0.55 * f));
+  }
+
   setPixelScale(halfHeight) {
     this.add.mat.uniforms.uScale.value = halfHeight;
     this.norm.mat.uniforms.uScale.value = halfHeight;
@@ -225,7 +231,7 @@ export class Effects {
     const r = this._r.crossVectors(f, this._u).normalize();
     const len = speed * 0.065 * (boost ? 1.5 : 1);
     this._q.setFromUnitVectors(this._z, this._d.copy(f).negate());
-    for (let i = 0; i < this.LINES; i++) {
+    for (let i = 0; i < this.lines.count; i++) {
       const p = this.linePos[i];
       const rx = p.x - camPos.x, ry = p.y - camPos.y, rz = p.z - camPos.z;
       const along = rx * f.x + ry * f.y + rz * f.z;

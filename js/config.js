@@ -129,6 +129,10 @@ export const DEFAULT_SETTINGS = {
   vrControl: 'standard',
   vrRate: 72,
   volume: 0.8,
+  touch: 'auto',          // commandes tactiles : auto (téléphone/tablette), on, off
+  touchSteer: 'joystick', // joystick | tilt (inclinaison du téléphone)
+  autoThrottle: false,    // accélération automatique (le pouce droit reste libre)
+  quality: 'auto',        // auto | basse | moyenne | haute
 };
 
 const STORAGE_KEY = 'podracevr-settings-v1';

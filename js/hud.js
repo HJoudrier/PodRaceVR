@@ -13,6 +13,7 @@ function healthColor(h) {
 
 function repairKeyName(source) {
   if (source === 'xr') return 'X';
+  if (source === 'touch') return '🔧';
   if (source === 'gamepad') return 'X';
   return 'R';
 }
@@ -32,7 +33,7 @@ export class Hud {
     for (const k of SYSTEMS) {
       const row = document.createElement('div');
       row.className = 'dmg-row';
-      row.innerHTML = `<span class="dmg-sel">▶</span><span class="dmg-name">${SYSTEM_LABELS[k]}</span><span class="dmg-bar"><span class="dmg-fill"></span></span><span class="dmg-state"></span>`;
+      row.innerHTML = `<span class="dmg-sel">▶</span><span class="dmg-name"><span class="dmg-long">${SYSTEM_LABELS[k]}</span><span class="dmg-short">${SYSTEM_SHORT[k]}</span></span><span class="dmg-bar"><span class="dmg-fill"></span></span><span class="dmg-state"></span>`;
       this.el.damage.appendChild(row);
       this.rows[k] = { row, fill: row.querySelector('.dmg-fill'), state: row.querySelector('.dmg-state') };
     }

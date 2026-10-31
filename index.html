@@ -2,7 +2,9 @@
 <html lang="fr">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="theme-color" content="#2a170b">
   <title>PodRace VR</title>
   <link rel="stylesheet" href="css/style.css">
@@ -47,6 +49,8 @@
         <p id="vr-note" class="hint"></p>
       </section>
     </div>
+    <!-- bouton toujours visible sur petit écran (téléphone) -->
+    <div id="quick-start"><button id="btn-start2" class="big">▶ LANCER LA COURSE</button></div>
     <footer class="menu-foot">
       <button id="btn-help" class="small">Commandes</button>
       <span class="credit">Jeu de fan non officiel — rendu cartoon, sons synthétisés.</span>
@@ -83,6 +87,18 @@
             <li>Y / LB : système à réparer</li>
             <li>B : caméra · Start : pause</li>
             <li>Select / clic stick : se replacer</li>
+          </ul>
+        </div>
+        <div>
+          <h3>Téléphone / tablette</h3>
+          <ul>
+            <li>Tenez le téléphone en <b>paysage</b> (plein écran automatique)</li>
+            <li><b>Joystick</b> : glissez le pouce gauche à gauche / à droite</li>
+            <li><b>Inclinaison</b> : tournez le téléphone comme un volant</li>
+            <li>GAZ / FREIN / BOOST / 🔧 RÉPARER : maintenir</li>
+            <li>Glissez le pouce de GAZ vers FREIN sans le lever</li>
+            <li>⟳🔧 système à réparer · ↺ se replacer · 🎥 caméra · ⏸ pause</li>
+            <li>Option « Accélérateur automatique » pour jouer d'un pouce</li>
           </ul>
         </div>
         <div>
@@ -136,6 +152,31 @@
     <div id="hud-alert"></div>
     <div id="hud-wrongway">MAUVAIS SENS</div>
     <div id="hud-flash"></div>
+  </div>
+
+  <!-- Commandes tactiles (téléphone / tablette) -->
+  <div id="touch" class="hidden">
+    <div class="t-stick-zone">
+      <div class="t-stick-hint">◀ DIRECTION ▶</div>
+      <div class="t-stick-base"><div class="t-stick-knob"></div></div>
+    </div>
+    <div class="t-btn t-throttle" data-act="throttle">GAZ</div>
+    <div class="t-btn t-brake" data-act="brake">FREIN</div>
+    <div class="t-btn t-boost" data-act="boost">BOOST</div>
+    <div class="t-btn t-repair" data-act="repair">🔧<small>RÉPARER</small></div>
+    <div class="t-top">
+      <div class="t-small" data-tap="cycle" aria-label="Système à réparer">⟳🔧</div>
+      <div class="t-small" data-tap="reset" aria-label="Se replacer sur la piste">↺</div>
+      <div class="t-small" data-tap="camera" aria-label="Caméra">🎥</div>
+      <div class="t-small" data-tap="pause" aria-label="Pause">⏸</div>
+    </div>
+  </div>
+  <div id="rotate-hint">
+    <div class="dialog">
+      <div class="rotate-icon">📱 ↻</div>
+      <p>Tournez le téléphone en <b>mode paysage</b> pour piloter.</p>
+      <button id="rotate-ok" class="small">Continuer en portrait</button>
+    </div>
   </div>
 
   <!-- Pause -->

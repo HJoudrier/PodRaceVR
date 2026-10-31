@@ -1,7 +1,8 @@
 # PodRace VR — Tatooine
 
-Course de podracers en 3D, style cartoon (cel shading), jouable dans le navigateur **et en réalité virtuelle
-sur Meta Quest 3** (WebXR, directement dans le navigateur du casque). HTML + CSS + JavaScript, sans étape de build.
+Course de podracers en 3D, style cartoon (cel shading), jouable dans le navigateur (ordinateur, **téléphone, tablette**)
+**et en réalité virtuelle sur Meta Quest 3** (WebXR, directement dans le navigateur du casque).
+HTML + CSS + JavaScript, sans étape de build.
 
 > Jeu de fan non officiel. Pilotes, podracers et circuit sont des créations originales inspirées de l'univers.
 
@@ -35,6 +36,24 @@ python3 -m http.server 8000
 
 puis ouvrir <http://localhost:8000>.
 
+### Sur téléphone ou tablette
+
+Ouvrez l'adresse du jeu (par exemple celle de GitHub Pages, voir ci-dessous) dans Chrome ou Safari.
+Les commandes tactiles apparaissent automatiquement sur les écrans tactiles (option **Tactile** : Auto / Activé / Désactivé).
+Au lancement de la course, le jeu passe en plein écran et en paysage quand le navigateur le permet (Android ;
+sur iPhone, tournez simplement le téléphone).
+
+- **Direction** : *Joystick* (glisser le pouce gauche à gauche / à droite, le joystick apparaît sous le pouce)
+  ou *Inclinaison* (tourner le téléphone comme un volant ; sur iPhone, autoriser l'accès aux capteurs de mouvement).
+- **GAZ**, **FREIN**, **BOOST**, **🔧 RÉPARER** : boutons à maintenir. On peut glisser le pouce d'un bouton à l'autre
+  (de GAZ vers FREIN) sans le lever.
+- Boutons rapides en haut : **⟳🔧** système à réparer, **↺** se replacer sur la piste, **🎥** caméra, **⏸** pause.
+- Option **Accélérateur automatique** : le pod accélère tout seul (freiner coupe les gaz), pratique en mode inclinaison
+  ou pour jouer d'une main.
+- Le téléphone vibre lors des chocs et des tirs (Android).
+- Option **Qualité** (Auto / Basse / Moyenne / Haute) : résolution de rendu et densité des effets.
+  *Auto* choisit *Moyenne* sur téléphone ; passez en *Basse* si le jeu saccade.
+
 ### Sur Meta Quest 3
 
 WebXR exige une page en **HTTPS** (ou `localhost`). Deux possibilités :
@@ -66,6 +85,8 @@ position, carte et état des systèmes. Maintenir le bouton Meta recentre la vue
 | Se replacer sur la piste | T / Retour arrière | Select / clic stick | Clic d'un stick | Clic d'un stick |
 | Pause | Échap / P | Start | B | B |
 
+Sur écran tactile, voir la section *Sur téléphone ou tablette* ci-dessus.
+
 Le mode **leviers** reproduit le pilotage d'un podracer : chaque gâchette commande un réacteur, pousser davantage
 le réacteur gauche fait tourner à droite et inversement.
 
@@ -92,7 +113,8 @@ js/raiders.js         pillards et tirs de blaster
 js/race.js            grille, compte à rebours, tours, collisions entre pods, classement
 js/effects.js         particules, lignes de vitesse
 js/audio.js           sons synthétisés (WebAudio)
-js/input.js           clavier, manette, manettes Quest
+js/input.js           clavier, manette, écran tactile, manettes Quest
+js/touch.js           commandes tactiles (joystick flottant, inclinaison, boutons)
 js/hud.js             HUD écran et HUD du cockpit (VR)
 js/ui.js              hangar : choix du pod, réglages, options
 js/config.js          podracers, pilotes, équilibrage, réglages par défaut

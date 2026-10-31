@@ -1,4 +1,4 @@
-// Entrées unifiées : clavier, manette (Gamepad API) et manettes Meta Quest (WebXR).
+// Entrées unifiées : clavier, manette (Gamepad API), écran tactile et manettes Meta Quest (WebXR).
 import { clamp } from './util.js';
 
 const EDGE_KEYS = ['cycle', 'camera', 'pause', 'reset', 'confirm', 'back'];
@@ -15,6 +15,7 @@ export class Input {
     for (const k of EDGE_KEYS) this.state[k] = false;
     this.source = 'keyboard';
     this.resetHold = 0;
+    this.touch = null; // TouchControls, branché par main.js
 
     window.addEventListener('keydown', (e) => {
       if (this.gameActive && ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space', 'Tab', 'Backspace'].includes(e.code)) e.preventDefault();
@@ -82,6 +83,19 @@ export class Input {
       if (b(7) > 0.05 || Math.abs(ax) > 0.3 || pr(0)) this.source = 'gamepad';
     }
 
+    // --- commandes tactiles (téléphone / tablette)
+    let touchTaps = null;
+    if (this.touch && this.touch.visible) {
+      const { state: t, taps } = this.touch.read();
+      throttle = Math.max(throttle, t.throttle);
+      brake = Math.max(brake, t.brake);
+      if (Math.abs(t.steer) > Math.abs(steer)) steer = t.steer;
+      if (t.boost) boost = true;
+      if (t.repair) repair = true;
+      touchTaps = taps;
+      if (this.touch.pointers.size || taps.size) this.source = 'touch';
+    }
+
     // --- manettes VR (mapping xr-standard)
     if (xrSession) {
       let L = null, R = null;
@@ -144,6 +158,12 @@ export class Input {
       if (t('Enter')) s.confirm = true;
       if (t('Escape')) s.back = true;
       tapped.clear();
+    }
+    if (touchTaps && touchTaps.size) {
+      if (touchTaps.has('cycle')) s.cycle = true;
+      if (touchTaps.has('camera')) s.camera = true;
+      if (touchTaps.has('pause')) s.pause = true;
+      if (touchTaps.has('reset')) s.reset = true;
     }
     return s;
   }

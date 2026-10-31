@@ -7,6 +7,7 @@ import { Effects } from './effects.js';
 import { AudioSys } from './audio.js';
 import { Raiders } from './raiders.js';
 import { Input } from './input.js';
+import { TouchControls, isTouchDevice } from './touch.js';
 import { Hud, CockpitHud } from './hud.js';
 import { Race } from './race.js';
 import { Menu } from './ui.js';
@@ -57,7 +58,8 @@ const vignette = (() => {
 })();
 camera.add(vignette);
 
-let track, env, effects, audio, raiders, input, hud, cockpitHud, menu;
+let track, env, effects, audio, raiders, input, hud, cockpitHud, menu, touch;
+let touchSeen = false;
 let race = null;
 let mode = 'loading';
 let camMode = settings.camera;
@@ -81,6 +83,11 @@ async function init() {
   raiders = new Raiders(scene, track, effects, audio).build();
   input = new Input();
   input.vrControl = settings.vrControl;
+  touch = new TouchControls($('touch'));
+  touch.configure({ steerMode: settings.touchSteer, autoThrottle: settings.autoThrottle });
+  input.touch = touch;
+  window.addEventListener('touchstart', () => { touchSeen = true; }, { passive: true });
+  $('rotate-ok').onclick = () => document.body.classList.add('portrait-ok');
   hud = new Hud(track);
   cockpitHud = new CockpitHud(hud);
   menu = new Menu(settings, {
@@ -89,16 +96,64 @@ async function init() {
       if (!showroom || showroom.id !== s.podId) setShowroomPod(s.podId);
       audio.setVolume(s.volume);
       input.vrControl = s.vrControl;
+      touch.configure({ steerMode: s.touchSteer, autoThrottle: s.autoThrottle });
+      // iOS : l'accès aux capteurs d'inclinaison se demande pendant un geste (ce clic)
+      if (s.touchSteer === 'tilt' && touchEnabled()) touch.requestTiltPermission();
+      applyQuality();
     },
     onStart: () => startRace(false),
     onStartVR: () => startRace(true),
   });
   setupXR();
   setupButtons();
+  applyQuality();
   window.addEventListener('resize', onResize);
   goMenu();
   $('loading').classList.add('hidden');
   renderer.setAnimationLoop(loop);
+}
+
+// ------------------------------------------------------------------ téléphone / qualité
+function touchEnabled() {
+  if (settings.touch === 'on') return true;
+  if (settings.touch === 'off') return false;
+  return isTouchDevice() || touchSeen;
+}
+
+function effectiveQuality() {
+  if (settings.quality !== 'auto') return settings.quality;
+  return isTouchDevice() ? 'moyenne' : 'haute';
+}
+
+function applyQuality() {
+  const q = effectiveQuality();
+  const dpr = window.devicePixelRatio || 1;
+  const pr = q === 'basse' ? Math.min(dpr, 1) * 0.7 : q === 'moyenne' ? Math.min(dpr, 1.25) : Math.min(dpr, 1.6);
+  if (!isXR()) {
+    renderer.setPixelRatio(pr);
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  }
+  const f = q === 'basse' ? 0.4 : q === 'moyenne' ? 0.7 : 1;
+  effects.setQuality(f);
+  if (env.rockOutline) env.rockOutline.visible = q !== 'basse';
+  if (race) race.fxScale = f;
+}
+
+// Plein écran + verrouillage en paysage (Android ; ignoré sans erreur ailleurs). Doit suivre un geste.
+function goFullscreenLandscape() {
+  const el = document.documentElement;
+  const lock = () => {
+    try {
+      if (screen.orientation && screen.orientation.lock) screen.orientation.lock('landscape').catch(() => {});
+    } catch (e) { /* non pris en charge */ }
+  };
+  if (document.fullscreenElement) { lock(); return; }
+  const req = el.requestFullscreen || el.webkitRequestFullscreen;
+  if (!req) return;
+  try {
+    const p = req.call(el, { navigationUI: 'hide' });
+    if (p && p.then) p.then(lock).catch(() => {});
+  } catch (e) { /* refusé */ }
 }
 
 function onResize() {
@@ -209,6 +264,10 @@ function endRace() {
 function startRace(vr) {
   audio.init();
   saveSettings(settings);
+  if (!vr && touchEnabled()) {
+    goFullscreenLandscape();
+    if (settings.touchSteer === 'tilt') touch.requestTiltPermission();
+  }
   if (vr) {
     enterVR().then(() => beginRace()).catch((e) => showError(e));
   } else {
@@ -222,6 +281,10 @@ function beginRace() {
   showroom = null;
   effects.clear();
   race = new Race({ scene, track, env, effects, audio, raiders, settings, hud, cockpitHud });
+  race.fxScale = effects.quality;
+  race.haptic = (pattern) => {
+    if (touch.visible && navigator.vibrate) { try { navigator.vibrate(pattern); } catch (e) { /* refusé */ } }
+  };
   const pm = race.player.model;
   pm.root.add(dolly);
   dolly.position.copy(EYE);
@@ -376,6 +439,10 @@ const clock = new THREE.Clock();
 function loop() {
   const dt = Math.min(clock.getDelta(), 0.05);
   const session = renderer.xr.getSession();
+  // commandes tactiles visibles uniquement pendant la course (hors VR)
+  const touchOn = touchEnabled() && !isXR();
+  touch.setVisible(mode === 'race' && touchOn);
+  hud.root.classList.toggle('touch', touchOn);
   const inp = input.poll(dt, session);
   try {
     if (mode === 'menu') {
@@ -414,11 +481,12 @@ function loop() {
       effects.setPixelScale(bufSize.y / 2);
       effects.update(dt, listener.pos, p.vel, Math.abs(p.speed), p.boost, p.groundY);
       audio.update(dt, listener, p, race.racers.filter((r) => !r.isPlayer), mode === 'paused');
+      const src = touch.visible && input.source === 'keyboard' ? 'touch' : input.source;
       if (!isXR()) {
-        hud.update(dt, race, input.source);
+        hud.update(dt, race, src);
         $('hud-flash').style.opacity = clamp((race.flashDamage || 0) * 1.4, 0, 1);
       }
-      cockpitHud.update(dt, race, input.source);
+      cockpitHud.update(dt, race, src);
     } else {
       renderer.getDrawingBufferSize(bufSize);
       effects.setPixelScale(bufSize.y / 2);
@@ -435,7 +503,7 @@ function loop() {
 
 // petit accès de débogage
 window.__pod = {
-  get race() { return race; }, get track() { return track; }, scene, camera, renderer, settings,
+  get race() { return race; }, get track() { return track; }, get touch() { return touch; }, get mode() { return mode; }, scene, camera, renderer, settings,
   beginRace: () => { audio.init(); beginRace(); }, goMenu: () => goMenu(),
   // simulation accélérée sans rendu (tests) : inp = 'auto' -> pilote automatique
   sim(sec, inp = 'auto', cruise = 400) {

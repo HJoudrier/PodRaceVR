@@ -17,6 +17,7 @@ export class Menu {
       this.changed();
     };
     $('btn-start').onclick = () => this.h.onStart();
+    $('btn-start2').onclick = () => this.h.onStart();
     $('btn-vr').onclick = () => this.h.onStartVR();
     $('btn-help').onclick = () => $('help').classList.remove('hidden');
     $('help-close').onclick = () => $('help').classList.add('hidden');
@@ -142,15 +143,19 @@ export class Menu {
       }
       box.appendChild(row);
     };
+    const sep = (label) => {
+      const d = document.createElement('div');
+      d.className = 'opt-sep';
+      d.textContent = label;
+      box.appendChild(d);
+    };
     stepper('Tours', 'laps', 1, 10);
     stepper('Adversaires', 'opponents', 1, 7);
     seg('Difficulté', 'difficulty', Object.entries(DIFFICULTY).map(([k, v]) => [k, v.label]));
     seg('Avaries', 'breakdowns', Object.entries(BREAKDOWNS).map(([k, v]) => [k, v.label]));
     seg('Pillards', 'raiders', Object.entries(RAIDERS).map(([k, v]) => [k, v.label]));
     seg('Caméra', 'camera', [['chase', 'Poursuite'], ['cockpit', 'Cockpit']]);
-    seg('Contrôle VR', 'vrControl', [['standard', 'Standard'], ['leviers', 'Leviers']]);
-    seg('Confort VR', 'vignette', [[true, 'Vignette'], [false, 'Aucun']]);
-    seg('Fréquence VR', 'vrRate', [[72, '72 Hz'], [90, '90 Hz'], [120, '120 Hz']]);
+    seg('Qualité', 'quality', [['auto', 'Auto'], ['basse', 'Basse'], ['moyenne', 'Moyenne'], ['haute', 'Haute']]);
     const vol = document.createElement('div');
     vol.className = 'opt-row';
     vol.innerHTML = `<span>Volume</span><input type="range" min="0" max="1" step="0.05">`;
@@ -158,6 +163,14 @@ export class Menu {
     input.value = this.s.volume;
     input.oninput = () => { this.s.volume = parseFloat(input.value); this.changed(); };
     box.appendChild(vol);
+    sep('Téléphone / tablette');
+    seg('Tactile', 'touch', [['auto', 'Auto'], ['on', 'Activé'], ['off', 'Désactivé']]);
+    seg('Direction', 'touchSteer', [['joystick', 'Joystick'], ['tilt', 'Inclinaison']]);
+    seg('Accélérateur', 'autoThrottle', [[false, 'Bouton GAZ'], [true, 'Automatique']]);
+    sep('Réalité virtuelle');
+    seg('Contrôle VR', 'vrControl', [['standard', 'Standard'], ['leviers', 'Leviers']]);
+    seg('Confort VR', 'vignette', [[true, 'Vignette'], [false, 'Aucun']]);
+    seg('Fréquence VR', 'vrRate', [[72, '72 Hz'], [90, '90 Hz'], [120, '120 Hz']]);
   }
 
   refreshAll() {
