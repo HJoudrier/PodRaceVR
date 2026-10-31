@@ -1,8 +1,8 @@
 // Point d'entrée : rendu, boucle de jeu, caméras, menus, pause, résultats et session WebXR (Meta Quest).
 import * as THREE from 'three';
-import { TATOOINE } from './tracks/tatooine.js';
+import { TRACKS, getTrackDef, trackPreview } from './tracks/index.js';
 import { Track } from './track.js';
-import { Environment } from './environment.js';
+import { Environment, disposeTree } from './environment.js';
 import { Effects } from './effects.js';
 import { AudioSys } from './audio.js';
 import { Raiders } from './raiders.js';
@@ -60,6 +60,8 @@ camera.add(vignette);
 
 let track, env, effects, audio, raiders, input, hud, cockpitHud, menu, touch;
 let touchSeen = false;
+let xrSupported = false;
+let worldDensity = null;
 let race = null;
 let mode = 'loading';
 let camMode = settings.camera;
@@ -74,13 +76,11 @@ const isXR = () => renderer.xr.isPresenting;
 
 async function init() {
   await new Promise((r) => setTimeout(r, 40));
-  track = new Track(TATOOINE);
-  scene.add(track.build());
-  env = new Environment(scene, track).build();
   effects = new Effects(scene);
   audio = new AudioSys();
   audio.setVolume(settings.volume);
-  raiders = new Raiders(scene, track, effects, audio).build();
+  if (!TRACKS.find((t) => t.id === settings.trackId)) settings.trackId = 'tatooine';
+  buildWorld(settings.trackId);
   input = new Input();
   input.vrControl = settings.vrControl;
   touch = new TouchControls($('touch'));
@@ -100,9 +100,14 @@ async function init() {
       // iOS : l'accès aux capteurs d'inclinaison se demande pendant un geste (ce clic)
       if (s.touchSteer === 'tilt' && touchEnabled()) touch.requestTiltPermission();
       applyQuality();
+      // la densité du décor change : on régénère le circuit (rare)
+      if (worldDensity !== null && qualityDensity() !== worldDensity && mode === 'menu') selectTrack(track.def.id, true);
     },
     onStart: () => startRace(false),
     onStartVR: () => startRace(true),
+    onTrack: (id) => selectTrack(id),
+    tracks: TRACKS,
+    preview: trackPreview,
   });
   setupXR();
   setupButtons();
@@ -111,6 +116,40 @@ async function init() {
   goMenu();
   $('loading').classList.add('hidden');
   renderer.setAnimationLoop(loop);
+}
+
+// ------------------------------------------------------------------ circuits
+// Construit (ou reconstruit) le circuit, son décor et ses pillards.
+function buildWorld(id) {
+  if (track) { scene.remove(track.group); disposeTree(track.group); }
+  if (env) env.dispose();
+  if (raiders) raiders.dispose();
+  const def = getTrackDef(id);
+  track = new Track(def);
+  scene.add(track.build());
+  worldDensity = qualityDensity();
+  env = new Environment(scene, track, { density: worldDensity }).build();
+  raiders = new Raiders(scene, track, effects, audio).build();
+  if (hud) hud.setTrack(track);
+  if (renderer && effects) applyQuality();
+}
+
+async function selectTrack(id, force = false) {
+  if (!force && track && track.def.id === id) return;
+  const def = getTrackDef(id);
+  $('loading-text').textContent = `Cap sur ${def.planet}… génération du circuit « ${def.name} »`;
+  $('loading').classList.remove('hidden');
+  await new Promise((r) => setTimeout(r, 60));
+  try {
+    buildWorld(id);
+    settings.trackId = id;
+    saveSettings(settings);
+    setShowroomPod(settings.podId);
+    menu.refreshTrack();
+  } catch (e) {
+    showError(e);
+  }
+  $('loading').classList.add('hidden');
 }
 
 // ------------------------------------------------------------------ téléphone / qualité
@@ -122,7 +161,12 @@ function touchEnabled() {
 
 function effectiveQuality() {
   if (settings.quality !== 'auto') return settings.quality;
-  return isTouchDevice() ? 'moyenne' : 'haute';
+  return isTouchDevice() || xrSupported ? 'moyenne' : 'haute';
+}
+
+function qualityDensity() {
+  const q = effectiveQuality();
+  return q === 'basse' ? 0.5 : q === 'moyenne' ? 0.75 : 1;
 }
 
 function applyQuality() {
@@ -170,6 +214,8 @@ function setupXR() {
     return;
   }
   navigator.xr.isSessionSupported('immersive-vr').then((ok) => {
+    xrSupported = ok;
+    if (ok && settings.quality === 'auto' && worldDensity !== qualityDensity() && mode === 'menu') selectTrack(track.def.id, true);
     menu.setVR(ok, ok ? 'Casque détecté : la course démarre directement dans le cockpit. Asseyez-vous confortablement !' : 'Mode VR immersif non disponible sur cet appareil.');
   }).catch(() => menu.setVR(false, 'Impossible de vérifier la prise en charge de la VR.'));
 }
@@ -492,7 +538,7 @@ function loop() {
       effects.setPixelScale(bufSize.y / 2);
       effects.update(dt, camera.position, tmpV3.set(0, 0, 0), 0, false, 0);
     }
-    env.update(camera);
+    env.update(camera, dt, bufSize.y / 2);
   } catch (e) {
     showError(e);
     renderer.setAnimationLoop(null);
@@ -504,7 +550,7 @@ function loop() {
 // petit accès de débogage
 window.__pod = {
   get race() { return race; }, get track() { return track; }, get touch() { return touch; }, get mode() { return mode; }, scene, camera, renderer, settings,
-  beginRace: () => { audio.init(); beginRace(); }, goMenu: () => goMenu(),
+  beginRace: () => { audio.init(); beginRace(); }, goMenu: () => goMenu(), selectTrack: (id) => selectTrack(id),
   // simulation accélérée sans rendu (tests) : inp = 'auto' -> pilote automatique
   sim(sec, inp = 'auto', cruise = 400) {
     const base = { throttle: 1, brake: 0, steer: 0, boost: false, repair: false, cycle: false, camera: false, pause: false, reset: false };

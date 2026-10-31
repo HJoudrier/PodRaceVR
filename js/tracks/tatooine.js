@@ -3,7 +3,9 @@
 // Les arches et rochers sont positionnés par "at" = indice (fractionnaire) le long des points de contrôle.
 export const TATOOINE = {
   id: 'tatooine',
-  name: 'Tatooine — Boucle des Dunes',
+  name: 'Boucle des Dunes',
+  planet: 'Tatooine',
+  desc: 'Le grand classique : dunes brûlantes, canyons des pillards et arches d\'argile sous deux soleils.',
   points: [
     [0, 0, 0, 46, 0],          // 0  ligne de départ / arrivée
     [0, 0, 400, 46, 0],        // 1
@@ -56,25 +58,6 @@ export const TATOOINE = {
     { at: 22.75, lat: -10, r: 3.2 },
     { at: 23.45, lat: 9, r: 3.4 },
   ],
-  theme: {
-    skyTop: 0x3f86d8,
-    skyHorizon: 0xf6dcae,
-    fog: 0xeccb98,
-    fogNear: 260,
-    fogFar: 3100,
-    sand: 0xe2b877,
-    sandDark: 0xc7945a,
-    sandLight: 0xf0d29b,
-    shoulder: 0xd6a668,
-    strata: [0xd9925a, 0xc4703f, 0xe8b37c, 0xb35d35, 0xdba46c, 0xa8532f, 0xe0b98a],
-    plateau: 0xd9ad72,
-    stoneArch: 0xc98a55,
-    clayArch: 0xb5583a,
-    sunDir: [0.45, 0.62, -0.42],
-    sun2Dir: [0.62, 0.38, -0.55],
-    sunColor: 0xfff1d8,
-    hemiSky: 0xbfd6ff,
-    hemiGround: 0xd29a5c,
-    mountains: 0xc49a76,
-  },
+  // Le thème par défaut (common.js) est celui de Tatooine : seuls les dômes sont propres à ce circuit.
+  theme: { domes: true },
 };

@@ -167,6 +167,35 @@ table.results td.est { opacity: 0.7; font-style: italic; }
 #error { position: fixed; left: 16px; right: 16px; bottom: 16px; z-index: 100; padding: 12px; background: #8a1d10; color: #fff; border: 3px solid var(--ink); border-radius: 12px; font-family: monospace; white-space: pre-wrap; }
 
 
+
+/* ---------- choix du circuit */
+.track-current {
+  display: flex; gap: 10px; align-items: center; cursor: pointer; margin-bottom: 4px;
+  background: rgba(255, 240, 210, 0.08); border: 2px solid rgba(232, 160, 74, 0.5); border-radius: 12px; padding: 6px;
+}
+.track-current:hover { background: rgba(255, 240, 210, 0.15); }
+.track-current canvas { width: 96px; height: 64px; border-radius: 8px; border: 2px solid var(--ink); flex: none; }
+.track-planet { font-size: 0.75rem; font-weight: 900; color: var(--sky); text-transform: uppercase; letter-spacing: 0.1em; }
+.track-name { font-size: 1.05rem; font-weight: 900; color: var(--gold); }
+.track-meta { font-size: 0.78rem; color: #e3c9a0; }
+#btn-tracks { margin-top: 6px; margin-bottom: 8px; }
+.tracks-dialog { width: min(1180px, 100%); }
+.hint.center { text-align: center; margin-top: 0; }
+.tracks-dialog .row-btns { position: sticky; bottom: -20px; padding: 8px 0 4px; background: linear-gradient(transparent, rgba(42, 23, 11, 0.97) 30%); }
+.track-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; margin: 10px 0 4px; }
+.track-card {
+  background: rgba(255, 240, 210, 0.07); border: 3px solid transparent; border-radius: 14px; padding: 8px; cursor: pointer;
+  display: flex; flex-direction: column; gap: 4px; transition: transform 0.1s;
+}
+.track-card:hover { background: rgba(255, 240, 210, 0.14); transform: translateY(-2px); }
+.track-card.sel { border-color: var(--gold); background: rgba(255, 211, 107, 0.18); }
+.track-card canvas { width: 100%; height: auto; aspect-ratio: 3 / 2; border-radius: 10px; border: 2px solid var(--ink); }
+.track-card .tc-planet { font-size: 0.72rem; font-weight: 900; color: var(--sky); text-transform: uppercase; letter-spacing: 0.1em; }
+.track-card .tc-name { font-weight: 900; color: var(--gold); font-size: 1rem; line-height: 1.15; }
+.track-card .tc-desc { font-size: 0.78rem; color: #f0dcbc; line-height: 1.3; }
+.track-card .tc-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 2px; }
+.track-card .tc-tags span { font-size: 0.66rem; font-weight: 800; padding: 1px 6px; border-radius: 8px; background: rgba(0, 0, 0, 0.35); color: #fff4dc; }
+
 /* ---------- commandes tactiles */
 html, body { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
 #touch {

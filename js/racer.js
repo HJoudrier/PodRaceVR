@@ -156,7 +156,7 @@ export class Racer {
     const latR = q.lateral + (fx * q.rx + fz * q.rz) * dR;
     const pts = [[latF, FRONT_R], [latR, REAR_R], [q.lateral, 2.2]];
     let hardLimit, wall;
-    if (q.wallH > 5) { hardLimit = e + 0.4; wall = true; }
+    if (q.wallH > 5 || track.railed) { hardLimit = e + 0.4; wall = true; }
     else { hardLimit = e + 72; wall = false; }
 
     for (const [lat, r] of pts) {
@@ -407,7 +407,7 @@ export class Racer {
       const vn = Math.abs(ai.latVel);
       ai.lat = sgn * (lim + 0.6);
       if (ai.latVel * sgn > 0) ai.latVel = -ai.latVel * 0.3;
-      if (vn > 4 && this.hitCooldown <= 0 && here.wallH > 5) {
+      if (vn > 4 && this.hitCooldown <= 0 && (here.wallH > 5 || track.railed)) {
         race.onImpact(this, vn * 0.6, sgn, 'wall', ai.lat);
         this.speed *= 0.92;
         this.hitCooldown = 0.4;

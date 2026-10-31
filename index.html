@@ -25,7 +25,7 @@
   <div id="menu" class="screen hidden">
     <header class="menu-head">
       <h1>PODRACE <span>VR</span></h1>
-      <p class="sub">Circuit n°1 · Tatooine — Boucle des Dunes</p>
+      <p class="sub" id="menu-sub">Tatooine — Boucle des Dunes</p>
     </header>
     <div class="cols">
       <section class="panel">
@@ -43,6 +43,15 @@
       </section>
       <section class="panel">
         <h2>Course</h2>
+        <div class="track-current" id="track-current" role="button" tabindex="0" aria-label="Choisir le circuit">
+          <canvas id="track-mini" width="240" height="160"></canvas>
+          <div class="track-info">
+            <div class="track-planet" id="track-planet">Tatooine</div>
+            <div class="track-name" id="track-name">Boucle des Dunes</div>
+            <div class="track-meta" id="track-meta"></div>
+          </div>
+        </div>
+        <button id="btn-tracks" class="big alt">🪐 CHOISIR LE CIRCUIT</button>
         <div id="race-opts"></div>
         <button id="btn-start" class="big">LANCER LA COURSE</button>
         <button id="btn-vr" class="big vr" disabled>COURIR EN VR</button>
@@ -55,6 +64,16 @@
       <button id="btn-help" class="small">Commandes</button>
       <span class="credit">Jeu de fan non officiel — rendu cartoon, sons synthétisés.</span>
     </footer>
+  </div>
+
+  <!-- Choix du circuit -->
+  <div id="tracks" class="screen overlay hidden">
+    <div class="dialog wide tracks-dialog">
+      <h2>Choisir le circuit</h2>
+      <p class="hint center">16 planètes, 16 ambiances. Le décor se génère quand vous choisissez une course.</p>
+      <div id="track-grid" class="track-grid"></div>
+      <div class="row-btns"><button id="tracks-close" class="big alt">Fermer</button></div>
+    </div>
   </div>
 
   <!-- Aide / commandes -->

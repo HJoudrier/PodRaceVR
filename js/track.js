@@ -3,49 +3,9 @@
 import * as THREE from 'three';
 import { toon, outlineMaterial, smoothNormalsClone, mergeColored, paint } from './toon.js';
 import { clamp, lerp, noise1, mulberry32 } from './util.js';
+import { rockMaterial, facadeMaterial } from './materials.js';
 
-// Matériau rocheux à strates horizontales calculées dans le shader (bandes nettes façon cartoon).
-export function rockMaterial(strata, top, bandH = 7, extra = {}) {
-  const m = toon({ color: 0xffffff, ...extra });
-  const cols = strata.map((c) => new THREE.Color(c));
-  while (cols.length < 8) cols.push(cols[cols.length % strata.length].clone());
-  m.onBeforeCompile = (shader) => {
-    shader.uniforms.uStrata = { value: cols.slice(0, 8) };
-    shader.uniforms.uTop = { value: new THREE.Color(top) };
-    shader.uniforms.uBandH = { value: bandH };
-    shader.vertexShader = shader.vertexShader
-      .replace('#include <common>', '#include <common>\nvarying vec3 vWPos;\nvarying vec3 vWNrm;')
-      .replace(
-        '#include <begin_vertex>',
-        `#include <begin_vertex>
-        #ifdef USE_INSTANCING
-          vWPos = (modelMatrix * instanceMatrix * vec4(transformed, 1.0)).xyz;
-          vWNrm = normalize(mat3(modelMatrix) * mat3(instanceMatrix) * objectNormal);
-        #else
-          vWPos = (modelMatrix * vec4(transformed, 1.0)).xyz;
-          vWNrm = normalize(mat3(modelMatrix) * objectNormal);
-        #endif`
-      );
-    shader.fragmentShader = shader.fragmentShader
-      .replace(
-        '#include <common>',
-        '#include <common>\nvarying vec3 vWPos;\nvarying vec3 vWNrm;\nuniform vec3 uStrata[8];\nuniform vec3 uTop;\nuniform float uBandH;'
-      )
-      .replace(
-        'vec4 diffuseColor = vec4( diffuse, opacity );',
-        `float bc = (vWPos.y + sin(vWPos.x * 0.011 + vWPos.z * 0.007) * 4.0 + sin(vWPos.z * 0.043) * 1.2) / uBandH;
-        int bi = int(mod(floor(bc), 7.0));
-        vec3 rc = uStrata[bi];
-        float fe = fract(bc);
-        rc *= (fe < 0.06) ? 0.78 : 1.0;
-        float flatness = smoothstep(0.72, 0.88, vWNrm.y);
-        rc = mix(rc, uTop, flatness);
-        vec4 diffuseColor = vec4( diffuse * rc, opacity );`
-      );
-  };
-  m.customProgramCacheKey = () => 'rock' + strata.join(',') + top;
-  return m;
-}
+export { rockMaterial } from './materials.js';
 
 // Tube balayé le long d'un chemin plan (XY) avec rayon variable et bruit : arches et ponts naturels.
 function sweepTube(path, radii, radialSegs, noiseAmp, seed) {
@@ -82,24 +42,25 @@ function sweepTube(path, radii, radialSegs, noiseAmp, seed) {
   return g;
 }
 
-function makeRoadTexture() {
+const cssColor = (c) => (typeof c === 'number' ? '#' + c.toString(16).padStart(6, '0') : c);
+
+function makeRoadTexture(r) {
   const W = 256, H = 512;
   const c = document.createElement('canvas');
   c.width = W; c.height = H;
   const g = c.getContext('2d');
-  g.fillStyle = '#cf9e66';
+  g.fillStyle = cssColor(r.base);
   g.fillRect(0, 0, W, H);
   const rnd = mulberry32(42);
-  // grain de sable
+  // grain du revêtement
   for (let i = 0; i < 4000; i++) {
-    const v = rnd();
-    g.fillStyle = v < 0.5 ? 'rgba(120,70,30,0.10)' : 'rgba(255,235,190,0.12)';
+    g.fillStyle = rnd() < 0.5 ? r.speckDark : r.speckLight;
     g.fillRect(rnd() * W, rnd() * H, 2 + rnd() * 3, 2 + rnd() * 3);
   }
-  // ondulations transversales (rides de vent) : très efficaces pour percevoir la vitesse
+  // ondulations transversales : très efficaces pour percevoir la vitesse
   for (let k = 0; k < 8; k++) {
     const y = (k / 8) * H + rnd() * 20;
-    g.fillStyle = k % 2 ? 'rgba(110,60,25,0.22)' : 'rgba(255,230,180,0.18)';
+    g.fillStyle = k % 2 ? r.rippleDark : r.rippleLight;
     g.beginPath();
     g.moveTo(0, y);
     for (let x = 0; x <= W; x += 16) g.lineTo(x, y + Math.sin(x * 0.05 + k) * 5);
@@ -107,24 +68,32 @@ function makeRoadTexture() {
     g.closePath();
     g.fill();
   }
-  // sillons de trajectoire plus sombres
+  // sillons de trajectoire
+  const gm = /rgba?\(([^)]+)\)/.exec(r.groove || '');
+  const gp = gm ? gm[1].split(',').map((v) => v.trim()) : ['90', '50', '20', '0.22'];
+  const gc = gp.slice(0, 3).join(',');
+  const ga = gp[3] !== undefined ? parseFloat(gp[3]) : 0.22;
   for (const cx of [0.32, 0.68]) {
     const grd = g.createLinearGradient(cx * W - 30, 0, cx * W + 30, 0);
-    grd.addColorStop(0, 'rgba(90,50,20,0)');
-    grd.addColorStop(0.5, 'rgba(90,50,20,0.22)');
-    grd.addColorStop(1, 'rgba(90,50,20,0)');
+    grd.addColorStop(0, `rgba(${gc},0)`);
+    grd.addColorStop(0.5, `rgba(${gc},${ga})`);
+    grd.addColorStop(1, `rgba(${gc},0)`);
     g.fillStyle = grd;
     g.fillRect(cx * W - 30, 0, 60, H);
+  }
+  // ligne centrale pointillée (pistes urbaines)
+  if (r.line) {
+    g.fillStyle = cssColor(r.line);
+    for (let y = 0; y < H; y += 128) g.fillRect(W / 2 - 3, y, 6, 64);
   }
   // bordures alternées (vibreurs)
   const kw = 12;
   for (let y = 0; y < H; y += 64) {
-    const on = (y / 64) % 2 === 0;
-    g.fillStyle = on ? '#f3ead8' : '#c2482a';
+    g.fillStyle = cssColor((y / 64) % 2 === 0 ? r.kerbA : r.kerbB);
     g.fillRect(0, y, kw, 64);
     g.fillRect(W - kw, y, kw, 64);
   }
-  g.fillStyle = 'rgba(60,30,10,0.5)';
+  g.fillStyle = 'rgba(30,20,10,0.5)';
   g.fillRect(kw, 0, 3, H);
   g.fillRect(W - kw - 3, 0, 3, H);
   const t = new THREE.CanvasTexture(c);
@@ -153,6 +122,8 @@ export class Track {
   constructor(def) {
     this.def = def;
     this.theme = def.theme;
+    this.railed = this.theme.edge === 'rails';     // barrières continues : impossible de sortir de la piste
+    this.elevated = this.theme.elevated || null;   // piste suspendue au-dessus du vide / de l'eau
     const cps = def.points;
     this.nCP = cps.length;
     const pts = cps.map((p) => new THREE.Vector3(p[0], p[1], p[2]));
@@ -206,6 +177,9 @@ export class Track {
       this.curv[i] = s / (2 * W + 1);
     }
 
+    let minY = Infinity, maxY = -Infinity, sumY = 0;
+    for (let i = 0; i < N; i++) { minY = Math.min(minY, this.py[i]); maxY = Math.max(maxY, this.py[i]); sumY += this.py[i]; }
+    this.minY = minY; this.maxY = maxY; this.avgY = sumY / N;
     this.obstacles = [];
     this.archSpans = []; // positions (index) des arches, pour le son "whoosh"
     this.group = new THREE.Group();
@@ -298,6 +272,8 @@ export class Track {
     this.buildArches();
     this.buildBoulders();
     this.buildMarkers();
+    if (this.railed) this.buildRails();
+    if (this.elevated && this.elevated.pylons) this.buildPylons();
     this.buildStartLine();
     return this.group;
   }
@@ -306,7 +282,10 @@ export class Track {
     const N = this.N, th = this.theme;
     const roadPos = [], roadUV = [], roadIdx = [];
     const shPos = [], shCol = [], shIdx = [];
-    const cIn = new THREE.Color(th.shoulder), cOut = new THREE.Color(th.sand);
+    const elev = !!this.elevated;
+    const cIn = new THREE.Color(elev ? th.elevated.deckColor || 0x555a66 : th.shoulder);
+    const cOut = new THREE.Color(elev ? th.elevated.deckColor || 0x555a66 : th.ground.base);
+    if (elev) cOut.multiplyScalar(0.7);
     const TEX_LEN = 30;
     for (let k = 0; k <= N; k++) {
       const i = k % N;
@@ -316,7 +295,8 @@ export class Track {
       roadPos.push(x - rx * e, y, z - rz * e, x + rx * e, y, z + rz * e);
       roadUV.push(0, v, 1, v);
       // bas-côtés : gauche (ext, int) puis droite (int, ext)
-      const o = e + 10, dy = -1.1;
+      // piste au sol : bas-côtés en pente douce ; piste suspendue : flanc vertical du tablier
+      const o = elev ? e + 0.25 : e + 10, dy = elev ? -3.2 : -1.1;
       shPos.push(x - rx * o, y + dy, z - rz * o, x - rx * e, y - 0.02, z - rz * e);
       shPos.push(x + rx * e, y - 0.02, z + rz * e, x + rx * o, y + dy, z + rz * o);
       shCol.push(cOut.r, cOut.g, cOut.b, cIn.r, cIn.g, cIn.b, cIn.r, cIn.g, cIn.b, cOut.r, cOut.g, cOut.b);
@@ -335,7 +315,7 @@ export class Track {
     rg.setAttribute('uv', new THREE.Float32BufferAttribute(roadUV, 2));
     rg.setIndex(roadIdx);
     rg.computeVertexNormals();
-    this.roadTexture = makeRoadTexture();
+    this.roadTexture = makeRoadTexture(th.road);
     const road = new THREE.Mesh(rg, toon({ map: this.roadTexture }));
     road.name = 'road';
     this.group.add(road);
@@ -345,20 +325,47 @@ export class Track {
     sg.setAttribute('color', new THREE.Float32BufferAttribute(shCol, 3));
     sg.setIndex(shIdx);
     sg.computeVertexNormals();
-    const sh = new THREE.Mesh(sg, toon({ vertexColors: true }));
+    const sh = new THREE.Mesh(sg, toon({ vertexColors: true, side: elev ? THREE.DoubleSide : THREE.FrontSide }));
     this.group.add(sh);
+    if (elev) {
+      // dessous du tablier
+      const ug = new THREE.BufferGeometry();
+      const up = [], ui = [];
+      for (let k = 0; k <= N; k++) {
+        const i = k % N;
+        const e = this.width[i] / 2 + 0.25;
+        const x = this.px[i], y = this.py[i] - 3.2, z = this.pz[i], rx = this.rx[i], rz = this.rz[i];
+        up.push(x - rx * e, y, z - rz * e, x + rx * e, y, z + rz * e);
+      }
+      for (let k = 0; k < N; k++) { const a = 2 * k; ui.push(a, a + 2, a + 1, a + 1, a + 2, a + 3); }
+      ug.setAttribute('position', new THREE.Float32BufferAttribute(up, 3));
+      ug.setIndex(ui);
+      ug.computeVertexNormals();
+      this.group.add(new THREE.Mesh(ug, toon({ color: cOut })));
+    }
   }
 
   // Profil d'une falaise en un échantillon : liste de [décalage latéral depuis le bord, hauteur relative].
   wallProfile(i, side) {
     const s = i * this.step;
     const H = this.wallH[i];
+    // pied des falaises : sous la piste, ou jusqu'au sol lointain si la piste est suspendue
+    const foot = this.elevated ? this.elevated.floorY - this.py[i] - 5 : -2.5;
+    const outer = this.elevated ? foot : -9;
+    if (this.theme.wallStyle === 'city') {
+      // façades verticales avec un retrait (balcon) puis toits plats
+      const step = 2.5 + 2 * Math.sign(noise1(s / 90 + side * 13));
+      return [
+        [0.4, foot], [0.4, 0.2 * H], [0.4, 0.45 * H], [0.4, 0.68 * H], [0.6, 0.7 * H],
+        [step + 0.6, 0.7 * H], [step + 0.6, H], [40, H], [70, H], [70.5, outer],
+      ];
+    }
     const o = side * 57.3;
     const big = 2.6 * noise1(s / 70 + o);
     const n = (f, ph) => noise1(s / f + ph + o);
     const rimJ = 1.6 * n(7, 5.5);
     return [
-      [0.4, -2.5],
+      [0.4, foot],
       [1.5 + 1.1 * n(9, 3.1) + big * 0.4, 0.12 * H],
       [1.2 + 2.0 * n(14, 7.3) + big, 0.32 * H],
       [2.4 + 2.6 * n(11, 1.7) + big, 0.52 * H],
@@ -367,7 +374,7 @@ export class Track {
       [6.5 + 2.0 * n(20, 2.2) + big, H + rimJ],
       [26 + 5 * n(40, 8.8), H + 1.5 + 2.5 * n(30, 6.1)],
       [62 + 6 * n(55, 3.3), H + 0.5 + 3 * n(45, 1.9)],
-      [96, -9],
+      [96, outer],
     ];
   }
 
@@ -407,7 +414,9 @@ export class Track {
     g.setIndex(idx);
     g.computeVertexNormals();
     const th = this.theme;
-    this.rockMat = rockMaterial(th.strata, th.plateau, 7.5);
+    this.rockMat = th.wallStyle === 'city' && th.facade
+      ? facadeMaterial(th.facade)
+      : rockMaterial(th.strata, th.plateau, th.bandH || 7.5, {}, th.glow);
     const walls = new THREE.Mesh(g, this.rockMat);
     walls.name = 'walls';
     this.group.add(walls);
@@ -508,7 +517,8 @@ export class Track {
           }
           path.push(new THREE.Vector3(half, -5, 0));
           radii.push(thk * 1.5);
-          const g = sweepTube(path, radii, 6, 0.06, seed);
+          const smooth = this.theme.archClay && this.theme.archClay.smooth;
+          const g = sweepTube(path, radii, smooth ? 10 : 6, smooth ? 0 : 0.06, seed);
           g.applyMatrix4(this.frameMatrix(i));
           clayGeos.push(g);
           this.addObstacle(i, -half, thk * 1.4, 'pillar');
@@ -534,7 +544,8 @@ export class Track {
     }
     if (stoneGeos.length) {
       const g = mergeColored(stoneGeos);
-      const mat = rockMaterial(th.strata.slice().reverse(), th.plateau, 4.5);
+      const as = th.archStone || { strata: th.strata.slice().reverse(), top: th.plateau, bandH: 4.5, glow: th.glow };
+      const mat = rockMaterial(as.strata, as.top, as.bandH || 4.5, {}, as.glow);
       const m = new THREE.Mesh(g, mat);
       m.name = 'stoneArches';
       this.group.add(m);
@@ -542,7 +553,8 @@ export class Track {
     }
     if (clayGeos.length) {
       const g = mergeColored(clayGeos);
-      const mat = rockMaterial([0xb5583a, 0xa34a30, 0xc56a45, 0x9c432b, 0xbb5f3e, 0xa85236, 0xc77250], 0xd08a5a, 2.2);
+      const ac = th.archClay;
+      const mat = rockMaterial(ac.strata, ac.top, ac.bandH || 2.2, {}, ac.glow);
       const m = new THREE.Mesh(g, mat);
       m.name = 'clayArches';
       this.group.add(m);
@@ -573,7 +585,7 @@ export class Track {
     const list = this.def.boulders || [];
     if (!list.length) return;
     const geo = Track.rockGeometry(3, 1);
-    const mat = toon({ color: 0xb8804e });
+    const mat = toon({ color: this.theme.rockColors[0] });
     const mesh = new THREE.InstancedMesh(geo, mat, list.length);
     const out = new THREE.InstancedMesh(smoothNormalsClone(geo), outlineMaterial(0.08), list.length);
     const m = new THREE.Matrix4(), q = new THREE.Quaternion(), s = new THREE.Vector3(), p = new THREE.Vector3();
@@ -605,7 +617,7 @@ export class Track {
         const lat = side * (this.width[i] / 2 + 0.9);
         m.makeTranslation(this.px[i] + this.rx[i] * lat, this.py[i] - 0.1, this.pz[i] + this.rz[i] * lat);
         mesh.setMatrixAt(n, m);
-        c.set(k % 2 ? 0xf2e8d5 : 0xd0502c);
+        c.set(this.theme.markerColors[k % 2]);
         mesh.setColorAt(n, c);
         n++;
       }
@@ -624,11 +636,11 @@ export class Track {
     const pSpacing = Math.round(70 / this.step);
     const maxPoles = Math.ceil(N / pSpacing) * 2;
     const poles = new THREE.InstancedMesh(pg, toon({ vertexColors: true }), maxPoles);
-    const flagCols = [0xe9542f, 0x2f6fd0, 0xf2c14e, 0x3aa86b];
+    const flagCols = this.theme.flagColors;
     n = 0;
     const q = new THREE.Quaternion(), sc = new THREE.Vector3(1, 1, 1), p = new THREE.Vector3();
     for (let i = 0, k = 0; i < N; i += pSpacing, k++) {
-      if (this.wallH[i] > 2) continue;
+      if (this.wallH[i] > 2 || !this.theme.poles || this.railed) continue;
       for (const side of [-1, 1]) {
         const lat = side * (this.width[i] / 2 + 7);
         p.set(this.px[i] + this.rx[i] * lat, this.py[i] - 1, this.pz[i] + this.rz[i] * lat);
@@ -646,6 +658,71 @@ export class Track {
     pOut.instanceMatrix = poles.instanceMatrix;
     pOut.count = n;
     this.group.add(pOut);
+  }
+
+  // Barrières continues le long des deux bords (pistes urbaines, suspendues...)
+  buildRails() {
+    const N = this.N, th = this.theme;
+    const base = [], glow = [], bi = [], gi = [];
+    const stepK = 2;
+    let row = 0;
+    for (let k = 0; k <= N; k += stepK) {
+      const i = k % N;
+      const e = this.width[i] / 2 + 0.3;
+      for (const side of [-1, 1]) {
+        const x = this.px[i] + this.rx[i] * e * side, z = this.pz[i] + this.rz[i] * e * side, y = this.py[i];
+        base.push(x, y - 0.1, z, x, y + 0.85, z);
+        glow.push(x, y + 0.85, z, x, y + 1.2, z);
+      }
+      row++;
+    }
+    for (let r = 0; r < row - 1; r++) {
+      for (let sd = 0; sd < 2; sd++) {
+        const a = (r * 2 + sd) * 2, b = a + 1, c = ((r + 1) * 2 + sd) * 2, d = c + 1;
+        bi.push(a, c, b, b, c, d);
+        gi.push(a, c, b, b, c, d);
+      }
+    }
+    const mk = (pos, idx) => {
+      const g = new THREE.BufferGeometry();
+      g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+      g.setIndex(idx);
+      g.computeVertexNormals();
+      return g;
+    };
+    const dark = new THREE.Color(th.elevated ? th.elevated.deckColor || 0x3a3e4a : 0x3a3e4a).multiplyScalar(0.8);
+    this.group.add(new THREE.Mesh(mk(base, bi), toon({ color: dark, side: THREE.DoubleSide })));
+    this.group.add(new THREE.Mesh(mk(glow, gi), new THREE.MeshBasicMaterial({ color: th.railColor, side: THREE.DoubleSide })));
+  }
+
+  // Piliers sous une piste suspendue
+  buildPylons() {
+    const N = this.N, el = this.elevated;
+    const spacing = Math.round(48 / this.step);
+    const geo = new THREE.CylinderGeometry(1, 1.35, 1, 8);
+    geo.translate(0, -0.5, 0);
+    const count = Math.ceil(N / spacing) * 2;
+    const mesh = new THREE.InstancedMesh(geo, toon({ color: el.pylonColor || 0x888888 }), count);
+    const out = new THREE.InstancedMesh(smoothNormalsClone(geo), outlineMaterial(0.06), count);
+    out.instanceMatrix = mesh.instanceMatrix;
+    const m = new THREE.Matrix4(), q = new THREE.Quaternion(), sc = new THREE.Vector3(), p = new THREE.Vector3();
+    let n = 0;
+    for (let i = 0; i < N; i += spacing) {
+      if (this.wallH[i] > 5) continue; // dans un canyon d'immeubles, les façades portent la piste
+      const e = this.width[i] / 2;
+      const top = this.py[i] - 3.1;
+      const len = top - el.floorY;
+      if (len < 2) continue;
+      for (const side of [-1, 1]) {
+        p.set(this.px[i] + this.rx[i] * e * 0.55 * side, top, this.pz[i] + this.rz[i] * e * 0.55 * side);
+        sc.set(1.7, len, 1.7);
+        m.compose(p, q, sc);
+        mesh.setMatrixAt(n, m);
+        n++;
+      }
+    }
+    mesh.count = out.count = n;
+    this.group.add(mesh, out);
   }
 
   buildStartLine() {

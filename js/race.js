@@ -136,8 +136,9 @@ export class Race {
       this.audio.blasterHit();
       this.shake = Math.max(this.shake || 0, 0.6);
       this.flashDamage = 0.6;
-      this.hud.alert('TOUCHÉ PAR UN PILLARD !');
-      this.cockpitHud.alert('TOUCHÉ PAR UN PILLARD !');
+      const msg = `TOUCHÉ PAR UN ${this.raiders.name || 'PILLARD'} !`;
+      this.hud.alert(msg);
+      this.cockpitHud.alert(msg);
     }
     this.checkDestroyed(racer);
   }

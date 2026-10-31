@@ -6,17 +6,17 @@ import { clamp, mulberry32 } from './util.js';
 const BOLT_SPEED = 290;
 const MAX_BOLTS = 90;
 
-function raiderGeometry() {
+function raiderGeometry(look) {
   const parts = [];
   const robe = new THREE.ConeGeometry(0.75, 2.0, 8);
   robe.translate(0, 1.0, 0);
-  parts.push(paint(robe, 0xc9b48e));
+  parts.push(paint(robe, look.robe));
   const sash = new THREE.CylinderGeometry(0.5, 0.58, 0.25, 8);
   sash.translate(0, 1.15, 0);
-  parts.push(paint(sash, 0xd2401f));
+  parts.push(paint(sash, look.sash));
   const head = new THREE.SphereGeometry(0.36, 10, 8);
   head.translate(0, 2.25, 0);
-  parts.push(paint(head, 0xd8c7a3));
+  parts.push(paint(head, look.head));
   for (const sx of [-1, 1]) {
     const eye = new THREE.CylinderGeometry(0.1, 0.1, 0.12, 8);
     eye.rotateX(Math.PI / 2);
@@ -33,7 +33,7 @@ function raiderGeometry() {
   const arm = new THREE.CylinderGeometry(0.11, 0.11, 0.8, 6);
   arm.rotateX(Math.PI / 2.3);
   arm.translate(0.32, 1.6, -0.3);
-  parts.push(paint(arm, 0xc9b48e));
+  parts.push(paint(arm, look.robe));
   const g = mergeColored(parts);
   g.scale(2.4, 2.4, 2.4);
   return g;
@@ -77,7 +77,8 @@ export class Raiders {
       i += Math.round((95 + rnd() * 90) / t.step);
     }
 
-    const geo = raiderGeometry();
+    const geo = raiderGeometry(t.theme.raiders);
+    this.name = t.theme.raiders.name || 'PILLARD';
     this.mesh = new THREE.InstancedMesh(geo, toon({ vertexColors: true }), this.list.length);
     this.outline = new THREE.InstancedMesh(smoothNormalsClone(geo), outlineMaterial(0.05), this.list.length);
     this.outline.instanceMatrix = this.mesh.instanceMatrix;
@@ -111,6 +112,17 @@ export class Raiders {
     this._q.setFromAxisAngle(this._up, r.yaw);
     this._m.compose(r.pos, this._q, this._s);
     this.mesh.setMatrixAt(k, this._m);
+  }
+
+  dispose() {
+    for (const m of [this.mesh, this.outline, this.boltMesh, this.glowMesh]) {
+      if (!m) continue;
+      this.scene.remove(m);
+      m.geometry.dispose();
+      if (!m.material.userData.shared) m.material.dispose();
+    }
+    this.list = [];
+    this.bolts = [];
   }
 
   configure(raiderCfg, diff) {

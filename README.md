@@ -1,4 +1,4 @@
-# PodRace VR — Tatooine
+# PodRace VR
 
 Course de podracers en 3D, style cartoon (cel shading), jouable dans le navigateur (ordinateur, **téléphone, tablette**)
 **et en réalité virtuelle sur Meta Quest 3** (WebXR, directement dans le navigateur du casque).
@@ -8,9 +8,30 @@ HTML + CSS + JavaScript, sans étape de build.
 
 ## Contenu
 
-- **Circuit de Tatooine** (~6,7 km) généré à partir d'une spline : ligne droite des tribunes, dunes,
-  *Gorge des Pillards* et *Défilé du Krayt* (canyons étroits de 20 à 28 m), ponts naturels au-dessus des canyons,
-  arches de pierre (dont une à pilier central), colonnade d'arches d'argile, plaine de rochers.
+- **16 circuits sur 16 planètes**, à choisir dans le hangar (bouton **CHOISIR LE CIRCUIT**). Chaque circuit a son tracé,
+  ses canyons étroits avec tireurs embusqués, ses arches, son ciel, sa lumière, son décor et sa météo :
+
+| Planète | Circuit | Ambiance |
+|---|---|---|
+| Tatooine | Boucle des Dunes | dunes, deux soleils, canyons des pillards, arches d'argile, tribunes et dômes |
+| Hoth | Échine de Glace | neige, gorges de glace bleutée, pics de glace, blizzard |
+| Endor | Sentiers des Séquoias | forêt de séquoias géants, géante gazeuse dans le ciel, pollen |
+| Mustafar | Rivières de Lave | basalte noir, lacs de lave, falaises veinées de lave lumineuse, cendres et braises |
+| Naboo | Prairies des Lacs | collines vertes, lacs, palais à coupoles, tracé vallonné |
+| Coruscant | Couloirs Aériens | piste suspendue entre les gratte-ciel éclairés, barrières lumineuses, trafic aérien |
+| Kamino | Océan des Tempêtes | piste sur pilotis au-dessus de l'océan, cités sur pilotis, pluie battante |
+| Dagobah | Marais Brumeux | brume très dense, arbres noueux, eaux croupies, lucioles |
+| Geonosis | Flèches Rouges | désert rouge, flèches rocheuses, trois canyons, planète à anneau |
+| Bespin | Mer de Nuages | piste flottante au coucher du soleil, mer de nuages, tours de la cité, trafic |
+| Kashyyyk | Forêt des Géants | arbres de 100 à 250 m, lagons turquoise |
+| Jakku | Cimetière de Vaisseaux | désert pâle, épaves géantes, arches de carcasses métalliques |
+| Crait | Plaine de Sel | croûte de sel blanc sur sol rouge, sillons écarlates, cristaux |
+| Scarif | Lagons Tropicaux | îlots de sable, palmiers, lagons, arches marines |
+| Yavin 4 | Temples de la Jungle | jungle, temples à degrés, géante gazeuse orange, lucioles |
+| Felucia | Jardins Fongiques | champignons géants multicolores, roches violettes, spores lumineuses |
+
+- Les tracés des 15 nouvelles planètes sont générés à partir de quelques paramètres (forme, longueur, relief,
+  position des canyons) et validés automatiquement : pas de chevauchement, départ dégagé, virages praticables.
 - **Sensation de vitesse** : pods à 550–850 km/h au ras du sol, lignes de vitesse, poussière, balises et mâts qui défilent,
   parois de canyon toutes proches, vent et moteurs synthétisés (effet Doppler sur les concurrents), « whoosh » sous les arches,
   champ de vision qui s'élargit et vibrations à l'écran, vibrations du cockpit en VR.
@@ -103,7 +124,13 @@ index.html            interface (hangar, HUD, pause, résultats)
 css/style.css         style cartoon de l'interface
 lib/                  three.js r170 (MIT) embarqué, fonctionne hors ligne
 js/main.js            rendu, boucle de jeu, caméras, menus, session WebXR
-js/tracks/tatooine.js définition du circuit (points de contrôle, largeurs, falaises, arches, rochers, couleurs)
+js/tracks/tatooine.js circuit de Tatooine (points de contrôle dessinés à la main)
+js/tracks/planets.js  les 15 autres planètes (paramètres du tracé + thème)
+js/tracks/common.js   thème par défaut, fusion des thèmes, générateur de tracés, arches et rochers automatiques
+js/tracks/index.js    catalogue des circuits et aperçus pour le menu
+js/materials.js       matériaux calculés dans le shader : strates rocheuses (veines de lave), façades à fenêtres
+js/props.js           décors procéduraux (arbres, champignons, flèches, cristaux, immeubles, épaves, nuages...)
+js/weather.js         météo autour du pilote et trafic aérien
 js/track.js           spline, géométrie de la piste, falaises, arches, requêtes de position sur la piste
 js/environment.js     ciel aux deux soleils, dunes, mesas, montagnes, rochers, tribunes et portique de départ
 js/podModel.js        modèles procéduraux des podracers et leur animation
@@ -120,8 +147,12 @@ js/ui.js              hangar : choix du pod, réglages, options
 js/config.js          podracers, pilotes, équilibrage, réglages par défaut
 ```
 
-Pour ajouter un nouvel univers, il suffit de créer un fichier dans `js/tracks/` sur le modèle de `tatooine.js`
-(points de contrôle `[x, y, z, largeur, hauteur des falaises]`, arches, rochers, palette de couleurs).
+Pour ajouter un circuit, ajoutez une entrée dans `js/tracks/planets.js` : un `layout` (graine, rayon, harmoniques
+de forme, relief, indices des canyons, largeurs) et un `theme` qui ne redéfinit que ce qui change par rapport au
+thème par défaut (`js/tracks/common.js`) : ciel, soleils, planète dans le ciel, sol, eau ou lave, piste suspendue,
+barrières, strates des falaises, façades, décors, météo, trafic, couleurs des tireurs. On peut aussi donner
+directement des `points` dessinés à la main, comme pour Tatooine.
 
-Performances visées pour le Quest 3 : une centaine d'appels de rendu par œil, ~300 000 triangles, pas d'ombres
-dynamiques ni de post-traitement (l'aspect cartoon vient de `MeshToonMaterial` et de contours par coque inversée).
+Performances visées pour le Quest 3 : moins de 150 appels de rendu par œil et 180 000 à 450 000 triangles selon le
+circuit (densité du décor réduite en qualité Moyenne/Basse), pas d'ombres dynamiques ni de post-traitement
+(l'aspect cartoon vient de `MeshToonMaterial` et de contours par coque inversée).

@@ -43,6 +43,11 @@ export class Hud {
     this.buildMapPath();
   }
 
+  setTrack(track) {
+    this.track = track;
+    this.buildMapPath();
+  }
+
   buildMapPath() {
     const t = this.track;
     let minX = Infinity, maxX = -Infinity, minZ = Infinity, maxZ = -Infinity;

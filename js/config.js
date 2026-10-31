@@ -118,6 +118,7 @@ export const RAIDERS = {
 
 export const DEFAULT_SETTINGS = {
   podId: 'comete',
+  trackId: 'tatooine',
   tuning: { accel: 0, topSpeed: 0, handling: 0, braking: 0, armor: 0 },
   laps: 3,
   opponents: 5,

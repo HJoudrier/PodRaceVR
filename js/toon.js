@@ -35,7 +35,9 @@ export function outlineMaterial(thickness = 0.06, color = 0x24140a) {
         '#include <begin_vertex>\n  transformed += normalize(normal) * outlineThickness;'
       );
   };
-  m.customProgramCacheKey = () => 'outline' + thickness;
+  // programme GPU partagé entre toutes les épaisseurs (l'épaisseur est un uniform)
+  m.customProgramCacheKey = () => 'outline';
+  m.userData.shared = true; // ne pas détruire lors d'un changement de circuit
   outlineCache.set(key, m);
   return m;
 }

@@ -3,6 +3,77 @@ import { PODS, STAT_KEYS, STAT_LABELS, TUNING_MIN, TUNING_MAX, tuningPointsLeft,
 
 const $ = (id) => document.getElementById(id);
 const hex = (c) => '#' + c.toString(16).padStart(6, '0');
+const css = (c) => (typeof c === 'number' ? hex(c) : c);
+
+const WEATHER_LABELS = {
+  snow: 'Neige', rain: 'Pluie', ash: 'Cendres', embers: 'Braises', pollen: 'Pollen', fireflies: 'Lucioles',
+  dust: 'Poussière', saltdust: 'Poudre de sel', spores: 'Spores',
+};
+
+// Petite vignette du circuit : ciel, sol et tracé vu de dessus (canyons en couleur de roche).
+export function drawTrackPreview(canvas, pv) {
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const th = pv.theme;
+  const groundCol = th.clouds ? th.clouds.color : th.elevated && th.water ? th.water.color : th.elevated ? th.ground.base : th.ground.base;
+  const grd = ctx.createLinearGradient(0, 0, 0, H);
+  grd.addColorStop(0, css(th.skyTop));
+  grd.addColorStop(0.38, css(th.skyHorizon));
+  grd.addColorStop(0.42, css(groundCol));
+  grd.addColorStop(1, css(th.ground.dark || groundCol));
+  ctx.fillStyle = grd;
+  ctx.fillRect(0, 0, W, H);
+  if (th.planet) {
+    ctx.fillStyle = css(th.planet.color);
+    ctx.beginPath(); ctx.arc(W * 0.2, H * 0.17, H * 0.12, 0, Math.PI * 2); ctx.fill();
+  }
+  (th.suns || []).forEach((s, k) => {
+    ctx.fillStyle = css(s.color);
+    ctx.beginPath(); ctx.arc(W * (0.82 - k * 0.09), H * (0.12 + k * 0.05), H * 0.05 * (s.size || 1), 0, Math.PI * 2); ctx.fill();
+  });
+  let minU = Infinity, maxU = -Infinity, minV = Infinity, maxV = -Infinity;
+  for (const p of pv.line) { minU = Math.min(minU, p.u); maxU = Math.max(maxU, p.u); minV = Math.min(minV, p.v); maxV = Math.max(maxV, p.v); }
+  const sc = Math.min((W * 0.86) / (maxU - minU), (H * 0.8) / (maxV - minV));
+  const X = (p) => W / 2 + (p.u - (minU + maxU) / 2) * sc;
+  const Y = (p) => H * 0.55 + (p.v - (minV + maxV) / 2) * sc * 0.9;
+  const path = () => {
+    ctx.beginPath();
+    pv.line.forEach((p, i) => (i ? ctx.lineTo(X(p), Y(p)) : ctx.moveTo(X(p), Y(p))));
+    ctx.closePath();
+  };
+  ctx.lineJoin = 'round';
+  path(); ctx.strokeStyle = 'rgba(30,15,5,0.9)'; ctx.lineWidth = Math.max(4, W / 30); ctx.stroke();
+  path(); ctx.strokeStyle = css(th.road.base); ctx.lineWidth = Math.max(2, W / 60); ctx.stroke();
+  ctx.strokeStyle = css(th.strata[1]);
+  ctx.lineWidth = Math.max(2, W / 60);
+  ctx.beginPath();
+  let on = false;
+  pv.line.forEach((p) => {
+    if (p.canyon) { if (!on) { ctx.moveTo(X(p), Y(p)); on = true; } else ctx.lineTo(X(p), Y(p)); } else on = false;
+  });
+  ctx.stroke();
+  const s0 = pv.line[0];
+  ctx.fillStyle = '#fff';
+  ctx.strokeStyle = '#000';
+  ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.arc(X(s0), Y(s0), Math.max(3, W / 45), 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+}
+
+function trackTags(pv) {
+  const th = pv.theme, def = pv.def;
+  const tags = [`${(pv.length / 1000).toFixed(1).replace('.', ',')} km`];
+  let canyons = 0;
+  const n = def.points.length;
+  for (let i = 0; i < n; i++) if (def.points[i][4] > 0 && def.points[(i - 1 + n) % n][4] === 0) canyons++;
+  if (canyons) tags.push(`${canyons} canyon${canyons > 1 ? 's' : ''}`);
+  if (th.elevated) tags.push('Piste suspendue');
+  if (th.water) tags.push(th.water.lava ? 'Lave' : 'Eau');
+  if (th.clouds) tags.push('Nuages');
+  const w = !th.weather ? [] : Array.isArray(th.weather) ? th.weather : [th.weather];
+  for (const k of w) if (WEATHER_LABELS[k]) tags.push(WEATHER_LABELS[k]);
+  if (th.traffic) tags.push('Trafic');
+  return tags;
+}
 
 export class Menu {
   constructor(settings, handlers) {
@@ -20,11 +91,58 @@ export class Menu {
     $('btn-start2').onclick = () => this.h.onStart();
     $('btn-vr').onclick = () => this.h.onStartVR();
     $('btn-help').onclick = () => $('help').classList.remove('hidden');
+    const openTracks = () => { this.buildTrackGrid(); $('tracks').classList.remove('hidden'); };
+    $('btn-tracks').onclick = openTracks;
+    $('track-current').onclick = openTracks;
+    $('track-current').onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') openTracks(); };
+    $('tracks-close').onclick = () => $('tracks').classList.add('hidden');
     $('help-close').onclick = () => $('help').classList.add('hidden');
     this.refreshAll();
+    this.refreshTrack();
   }
 
   changed() { this.h.onChange(this.s); }
+
+  buildTrackGrid() {
+    if (this.trackCards) { this.refreshTrack(); return; }
+    const grid = $('track-grid');
+    grid.innerHTML = '';
+    this.trackCards = [];
+    for (const t of this.h.tracks) {
+      const pv = this.h.preview(t.id);
+      const card = document.createElement('div');
+      card.className = 'track-card';
+      card.dataset.id = t.id;
+      const cv = document.createElement('canvas');
+      cv.width = 300; cv.height = 200;
+      drawTrackPreview(cv, pv);
+      card.appendChild(cv);
+      const info = document.createElement('div');
+      info.innerHTML = `<div class="tc-planet">${t.planet}</div><div class="tc-name">${t.name}</div><div class="tc-desc">${t.desc}</div>
+        <div class="tc-tags">${trackTags(pv).map((x) => `<span>${x}</span>`).join('')}</div>`;
+      card.appendChild(info);
+      card.onclick = () => {
+        $('tracks').classList.add('hidden');
+        this.h.onTrack(t.id);
+      };
+      grid.appendChild(card);
+      this.trackCards.push(card);
+    }
+    this.refreshTrack();
+  }
+
+  refreshTrack() {
+    if (!this.h.preview) return;
+    const id = this.s.trackId;
+    const t = this.h.tracks.find((x) => x.id === id) || this.h.tracks[0];
+    const pv = this.h.preview(t.id);
+    drawTrackPreview($('track-mini'), pv);
+    $('track-planet').textContent = t.planet;
+    $('track-name').textContent = t.name;
+    $('track-meta').textContent = trackTags(pv).join(' · ');
+    $('menu-sub').textContent = `${t.planet} — ${t.name}`;
+    if (this.trackCards) this.trackCards.forEach((c) => c.classList.toggle('sel', c.dataset.id === t.id));
+  }
 
   show(v) { $('menu').classList.toggle('hidden', !v); }
 
