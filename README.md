@@ -35,6 +35,10 @@ HTML + CSS + JavaScript, sans étape de build.
 - **Sensation de vitesse** : pods à 550–850 km/h au ras du sol, lignes de vitesse, poussière, balises et mâts qui défilent,
   parois de canyon toutes proches, vent et moteurs synthétisés (effet Doppler sur les concurrents), « whoosh » sous les arches,
   champ de vision qui s'élargit et vibrations à l'écran, vibrations du cockpit en VR.
+- **Flou de mouvement** (option *Flou de vitesse* : Aucun / Léger / Normal / Fort) : flou radial centré sur le point vers
+  lequel on fonce, nul au centre et de plus en plus fort vers les bords et avec la vitesse (encore plus en boost).
+  Votre pod et le cockpit restent nets : seul le décor qui défile est flouté. Il est désactivé en VR, où un flou plein
+  écran provoque de l'inconfort et coûte cher ; le réglage allonge en revanche les traînées de vitesse, aussi en VR.
 - **8 podracers** aux formes et caractéristiques différentes ; jusqu'à 7 adversaires pilotés par l'IA.
 - **Atelier de réglage** : accélération, vitesse max, maniabilité, freinage, robustesse (armure).
   3 points libres, et on peut baisser une caractéristique pour en renforcer une autre.

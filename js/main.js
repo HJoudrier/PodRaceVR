@@ -14,6 +14,7 @@ import { Menu } from './ui.js';
 import { loadSettings, saveSettings, PODS } from './config.js';
 import { buildPod, animatePod, EYE } from './podModel.js';
 import { formatTime, clamp, damp, wrapAngle } from './util.js';
+import { MotionBlur } from './postfx.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -36,6 +37,10 @@ renderer.xr.enabled = true;
 renderer.xr.setReferenceSpaceType('local');
 renderer.xr.setFoveation(1);
 document.body.appendChild(renderer.domElement);
+
+const motionBlur = new MotionBlur(renderer);
+// étalement maximal du flou (fraction de la distance au point de fuite) et allongement des traînées
+const BLUR = { off: [0, 1], leger: [0.06, 1.15], normal: [0.11, 1.3], fort: [0.17, 1.5] };
 
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(72, window.innerWidth / window.innerHeight, 0.15, 7000);
@@ -179,6 +184,8 @@ function applyQuality() {
   }
   const f = q === 'basse' ? 0.4 : q === 'moyenne' ? 0.7 : 1;
   effects.setQuality(f);
+  effects.lineStretch = (BLUR[settings.motionBlur] || BLUR.normal)[1];
+  motionBlur.setQuality(q);
   if (env.rockOutline) env.rockOutline.visible = q !== 'basse';
   if (race) race.fxScale = f;
 }
@@ -544,7 +551,22 @@ function loop() {
     renderer.setAnimationLoop(null);
     return;
   }
-  renderer.render(scene, camera);
+  // flou de mouvement à l'écran, de plus en plus fort avec la vitesse (jamais en VR)
+  let blurAmt = 0;
+  const bset = BLUR[settings.motionBlur] || BLUR.normal;
+  if (race && !isXR() && bset[0] > 0 && (mode === 'race' || mode === 'paused' || mode === 'results')) {
+    const p = race.player;
+    const sf = Math.pow(clamp((Math.abs(p.speed) - 60) / 180, 0, 1), 1.4);
+    blurAmt = bset[0] * (sf + (p.boost ? 0.35 : 0));
+    if (mode !== 'paused') motionBlur.updateCenter(camera, p.vel, dt);
+  }
+  if (blurAmt > 0.002) {
+    // zone nette autour de la caméra : le cockpit en vue intérieure, tout le pod en vue poursuite
+    const cockpit = camMode === 'cockpit';
+    motionBlur.render(scene, camera, blurAmt, cockpit ? 14 : 30, cockpit ? 38 : 62);
+  } else {
+    renderer.render(scene, camera);
+  }
 }
 
 // petit accès de débogage

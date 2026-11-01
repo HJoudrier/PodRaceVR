@@ -274,6 +274,7 @@ export class Menu {
     seg('Pillards', 'raiders', Object.entries(RAIDERS).map(([k, v]) => [k, v.label]));
     seg('Caméra', 'camera', [['chase', 'Poursuite'], ['cockpit', 'Cockpit']]);
     seg('Qualité', 'quality', [['auto', 'Auto'], ['basse', 'Basse'], ['moyenne', 'Moyenne'], ['haute', 'Haute']]);
+    seg('Flou de vitesse', 'motionBlur', [['off', 'Aucun'], ['leger', 'Léger'], ['normal', 'Normal'], ['fort', 'Fort']]);
     const vol = document.createElement('div');
     vol.className = 'opt-row';
     vol.innerHTML = `<span>Volume</span><input type="range" min="0" max="1" step="0.05">`;

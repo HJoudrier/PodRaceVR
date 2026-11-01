@@ -124,6 +124,7 @@ export class Effects {
     this.add = new ParticlePool(scene, 1400, true);
     this.norm = new ParticlePool(scene, 1800, false);
     this.quality = 1;
+    this.lineStretch = 1; // allongement des traînées (réglage « flou de vitesse »)
 
     // lignes de vitesse : fines barres étirées dans le sens du déplacement
     this.LINES = 170;
@@ -229,7 +230,7 @@ export class Effects {
     const f = this._f;
     if (speed > 1) f.copy(vel).normalize(); else f.set(0, 0, -1);
     const r = this._r.crossVectors(f, this._u).normalize();
-    const len = speed * 0.065 * (boost ? 1.5 : 1);
+    const len = speed * 0.065 * (boost ? 1.5 : 1) * this.lineStretch;
     this._q.setFromUnitVectors(this._z, this._d.copy(f).negate());
     for (let i = 0; i < this.lines.count; i++) {
       const p = this.linePos[i];

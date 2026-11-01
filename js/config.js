@@ -134,6 +134,7 @@ export const DEFAULT_SETTINGS = {
   touchSteer: 'joystick', // joystick | tilt (inclinaison du téléphone)
   autoThrottle: false,    // accélération automatique (le pouce droit reste libre)
   quality: 'auto',        // auto | basse | moyenne | haute
+  motionBlur: 'normal',   // flou de vitesse à l'écran : off | leger | normal | fort
 };
 
 const STORAGE_KEY = 'podracevr-settings-v1';
