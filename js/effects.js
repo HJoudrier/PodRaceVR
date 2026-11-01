@@ -121,7 +121,7 @@ const COL = {
 export class Effects {
   constructor(scene) {
     this.scene = scene;
-    this.add = new ParticlePool(scene, 1400, true);
+    this.add = new ParticlePool(scene, 2400, true);
     this.norm = new ParticlePool(scene, 1800, false);
     this.quality = 1;
     this.lineStretch = 1; // allongement des traînées (réglage « flou de vitesse »)
@@ -172,6 +172,22 @@ export class Effects {
   flash(pos, color = 0xffffff, size = 6) {
     const c = C(color);
     this.add.spawn(pos.x, pos.y, pos.z, 0, 0, 0, 0.12, size, size * 1.6, 1, c, c, 0, 0);
+  }
+
+  // jet de flammes : particules projetées le long de dir sur une longueur len
+  flameJet(pos, dir, len, style, n = 6, strength = 1) {
+    const c0 = this._fc0 || (this._fc0 = new THREE.Color()), c1 = this._fc1 || (this._fc1 = new THREE.Color());
+    c0.set(style.core); c1.set(style.edge);
+    const sp = len * 2.4;
+    for (let k = 0; k < n; k++) {
+      const j = 0.22 * sp;
+      this.add.spawn(
+        pos.x + (Math.random() - 0.5) * 0.8, pos.y + (Math.random() - 0.5) * 0.8, pos.z + (Math.random() - 0.5) * 0.8,
+        dir.x * sp * (0.7 + Math.random() * 0.5) + (Math.random() - 0.5) * j,
+        dir.y * sp * (0.7 + Math.random() * 0.5) + (Math.random() - 0.5) * j + 2,
+        dir.z * sp * (0.7 + Math.random() * 0.5) + (Math.random() - 0.5) * j,
+        0.42 + Math.random() * 0.2, 3.2 * strength, 8.5 * strength, 0.95, c0, c1, 1.0, -3);
+    }
   }
 
   fire(pos, vel) {

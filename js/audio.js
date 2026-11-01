@@ -8,6 +8,7 @@ export class AudioSys {
     this.ai = [];
     this.running = false;
     this.repairT = 0;
+    this.covered = false; // sous un tunnel : moteurs qui résonnent, souffle plus aigu
   }
 
   init() {
@@ -183,8 +184,9 @@ export class AudioSys {
     if (!player) return;
     const sp = Math.abs(player.speed);
     const k = clamp(sp / 230, 0, 1.3);
-    this.windGain.gain.setTargetAtTime(0.75 * k * k, t, 0.1);
-    this.windBP.frequency.setTargetAtTime(250 + sp * 7, t, 0.1);
+    const cv = this.covered ? 1 : 0;
+    this.windGain.gain.setTargetAtTime(0.75 * k * k * (1 + 0.5 * cv), t, 0.1);
+    this.windBP.frequency.setTargetAtTime((250 + sp * 7) * (1 + 0.5 * cv), t, 0.1);
     this.hissGain.gain.setTargetAtTime(0.22 * Math.max(0, k - 0.45) * (player.boost ? 1.8 : 1), t, 0.1);
     this.scrapeGain.gain.setTargetAtTime(player.scraping > 0.5 ? 0.45 : 0, t, 0.03);
 
@@ -201,7 +203,7 @@ export class AudioSys {
       e.ng.gain.setTargetAtTime(0.4 + thr * 0.6, t, 0.05);
       e.lp.frequency.setTargetAtTime(260 + sp * 7 + thr * 900, t, 0.05);
       e.lfo.frequency.setTargetAtTime(18 + sp * 0.12, t, 0.1);
-      let g = player.destroyed ? 0 : 0.16 + thr * 0.14;
+      let g = (player.destroyed ? 0 : 0.16 + thr * 0.14) * (this.covered ? 1.45 : 1);
       // moteur endommagé : ratés
       if ((hs[i] < 40 || fires[i]) && Math.random() < 0.18) g *= 0.25;
       if (hs[i] <= 0) g *= 0.3;
@@ -300,6 +302,8 @@ export class AudioSys {
   blasterHit() { if (this.ctx) { this.noiseBurst(0.35, 2500, 0.7, null, 'bandpass', 300); this.hit(0.3); } }
   explosion(pos) { if (this.ctx) this.noiseBurst(1.6, 2500, 1.4, pos, 'lowpass', 60); }
   whoosh() { if (this.ctx) this.noiseBurst(0.7, 500, 0.55, null, 'bandpass', 2600); }
+  flameBurst(pos) { if (this.ctx) this.noiseBurst(1.2, 180, 0.9, pos, 'lowpass', 1400); }
+  splash(pos) { if (this.ctx) this.noiseBurst(0.9, 1200, 0.9, pos, 'bandpass', 300); }
   boostOn() { if (this.ctx) this.noiseBurst(0.6, 300, 0.4, null, 'bandpass', 3000); }
 
   tone(freq, dur, type = 'sine', peak = 0.4, delay = 0) {

@@ -5,9 +5,17 @@ export const PLANETS = [
   // ----------------------------------------------------------------- HOTH
   {
     id: 'hoth', name: 'Échine de Glace', planet: 'Hoth',
-    desc: 'Plaines enneigées balayées par le blizzard et gorges de glace bleutée.',
-    layout: { seed: 11, n: 26, R: 1050, aspect: 1.25, rot: 0.3, harm: [[2, 0.18, 0.5], [3, 0.12, 1.7]], wobble: 0.2, elev: 14, canyons: [[5, 9], [15, 19]], wOpen: 44, wCanyon: 24, hCanyon: 46 },
+    desc: 'Grotte de glace souterraine, deux crevasses à sauter et une courte gorge gardée par des tireurs.',
+    style: 'mixte',
+    layout: { seed: 11, n: 24, R: 1100, aspect: 1.3, rot: 0.3, harm: [[2, 0.16, 0.5], [3, 0.1, 1.7]], wobble: 0.18, elev: 10, canyons: [[15, 17]], wOpen: 44, wCanyon: 24, hCanyon: 44, features: ['stone', 'stone'], boulders: 2 },
+    sections: [
+      { type: 'tunnel', from: 4.4, to: 7.6, dip: 12, height: 14 },
+      { type: 'jump', at: 11.0, gap: 34 },
+      { type: 'jump', at: 20.4, gap: 30 },
+    ],
     theme: {
+      tunnel: { strata: [0x8fbfe6, 0x6aa2d6, 0xb2d6f2, 0x5a92c8, 0x9fcaee, 0x78acdc, 0xc2e0f6], top: 0xdcefff, bandH: 2.5, emissive: 0x0a2a48, light: 0xa8f0ff },
+      bridgeColor: 0x9aa6b4,
       skyTop: 0x7fa9d6, skyHorizon: 0xe6eef6, fog: 0xdfe8f2, fogNear: 180, fogFar: 2300,
       suns: [{ dir: [0.3, 0.35, -0.6], color: 0xffffff, glow: 0xdfeaff, size: 0.9 }],
       sunDir: [0.3, 0.45, -0.6], sunColor: 0xf4f8ff, sunIntensity: 2.0, hemiSky: 0xe2efff, hemiGround: 0xaabdd2, hemiIntensity: 1.35,
@@ -35,9 +43,19 @@ export const PLANETS = [
   // ----------------------------------------------------------------- ENDOR
   {
     id: 'endor', name: 'Sentiers des Séquoias', planet: 'Endor',
-    desc: 'Lune forestière : slalom entre des troncs géants sous un ciel où flotte une géante gazeuse.',
-    layout: { seed: 23, n: 28, R: 1000, aspect: 1.1, rot: 1.1, harm: [[3, 0.2, 0.3], [5, 0.06, 2.0]], wobble: 0.25, elev: 22, canyons: [[6, 9], [18, 21]], wOpen: 40, wCanyon: 24, hCanyon: 40 },
+    desc: 'Tracé technique et étroit entre les séquoias : passerelle sur un ravin, tronc creux et sauts sur des troncs couchés.',
+    style: 'technique',
+    layout: { seed: 23, n: 36, R: 950, aspect: 1.1, rot: 1.1, harm: [[3, 0.15, 0.3], [6, 0.1, 2.0], [9, 0.045, 1.0]], wobble: 0.16, elev: 18, canyons: [], wOpen: 31, wCanyon: 24, hCanyon: 40, features: ['stone', 'split', 'stone'], boulders: 3 },
+    sections: [
+      { type: 'jump', at: 8.3, gap: 28 },
+      { type: 'bridge', from: 9.8, to: 11.3, lift: 4 },
+      { type: 'tunnel', from: 22.3, to: 23.7, height: 12 },
+      { type: 'jump', at: 31.6, gap: 26 },
+    ],
     theme: {
+      railColor: 0xe8d090,
+      tunnel: { strata: [0x5a3a22, 0x4a2e1a, 0x6a4428, 0x3e2616, 0x624026, 0x523420, 0x704a2c], top: 0x3a5a26, bandH: 1.2, light: 0xffd890 },
+      bridgeColor: 0x6a4a2c,
       skyTop: 0x4f8fcf, skyHorizon: 0xcfe3d8, fog: 0xb8cfc0, fogNear: 110, fogFar: 1500,
       suns: [{ dir: [0.5, 0.55, 0.4], color: 0xfff6dc, glow: 0xffe6a8, size: 0.9 }],
       sunDir: [0.5, 0.6, 0.4], sunColor: 0xfff0d0, sunIntensity: 1.9, hemiSky: 0xcfe8ff, hemiGround: 0x4a6a32, hemiIntensity: 1.2,
@@ -68,9 +86,21 @@ export const PLANETS = [
   // ----------------------------------------------------------------- MUSTAFAR
   {
     id: 'mustafar', name: 'Rivières de Lave', planet: 'Mustafar',
-    desc: 'Roche volcanique noire, fleuves de lave et pluie de cendres sous un ciel en feu.',
-    layout: { seed: 37, n: 24, R: 950, aspect: 1.35, rot: -0.4, harm: [[2, 0.22, 1.0], [4, 0.08, 0.4]], wobble: 0.2, elev: 18, canyons: [[4, 8], [13, 17]], wOpen: 42, wCanyon: 22, hCanyon: 52 },
+    desc: 'Fleuves de lave à franchir sur des ponts ou d\'un bond, tube de lave souterrain et jets de flammes à esquiver.',
+    style: 'mixte',
+    layout: { seed: 37, n: 26, R: 1000, aspect: 1.35, rot: -0.4, harm: [[2, 0.2, 1.0], [4, 0.07, 0.4]], wobble: 0.18, elev: 14, canyons: [[16, 18]], wOpen: 40, wCanyon: 22, hCanyon: 52, features: ['stone'], boulders: 0 },
+    sections: [
+      { type: 'bridge', from: 3.4, to: 4.6 },
+      { type: 'flames', from: 5.5, to: 7.6, count: 6, kind: 'side' },
+      { type: 'tunnel', from: 9.2, to: 11.8, height: 14 },
+      { type: 'jump', at: 13.6, gap: 34 },
+      { type: 'flames', from: 20.2, to: 21.9, count: 6, kind: 'geyser' },
+      { type: 'bridge', from: 22.6, to: 23.8 },
+    ],
     theme: {
+      railColor: 0xff8a2a,
+      tunnel: { strata: [0x1c1412, 0x2a1e1a, 0xff5a12, 0x241a16, 0x160f0d, 0x30221d, 0x1f1613], top: 0x120c0a, bandH: 2.2, glow: [0, 0, 1.4, 0, 0, 0, 0, 0], light: 0xff8a3a },
+      bridgeColor: 0x3a3230, pylonColor: 0x2a2422,
       skyTop: 0x2a0e0c, skyHorizon: 0xc8482a, fog: 0x7a2c1c, fogNear: 140, fogFar: 1800,
       suns: [{ dir: [0.2, 0.18, -0.7], color: 0xffb070, glow: 0xff5a2a, size: 1.3 }],
       sunDir: [0.2, 0.5, -0.7], sunColor: 0xffa070, sunIntensity: 1.6, hemiSky: 0xff8a5a, hemiGround: 0x4a1810, hemiIntensity: 1.05,
@@ -100,9 +130,18 @@ export const PLANETS = [
   // ----------------------------------------------------------------- NABOO
   {
     id: 'naboo', name: 'Prairies des Lacs', planet: 'Naboo',
-    desc: 'Collines verdoyantes, lacs étincelants et palais à coupoles. Un tracé rapide et vallonné.',
-    layout: { seed: 41, n: 30, R: 1250, aspect: 1.15, rot: 0.8, harm: [[2, 0.12, 0.2], [3, 0.16, 2.4]], wobble: 0.22, elev: 36, canyons: [[9, 12], [21, 23]], wOpen: 46, wCanyon: 28, hCanyon: 38 },
+    desc: 'Le plus rapide des tracés verdoyants : longues courbes, deux ponts sur les lacs et un tunnel sous l\'eau.',
+    style: 'rapide',
+    layout: { seed: 41, n: 16, R: 1250, aspect: 1.25, rot: 0.8, harm: [[2, 0.1, 0.2], [3, 0.05, 2.4]], wobble: 0.12, elev: 24, canyons: [], wOpen: 52, wCanyon: 28, hCanyon: 38, features: ['clay', 'stone'], boulders: 0 },
+    sections: [
+      { type: 'bridge', from: 2.3, to: 3.6 },
+      { type: 'tunnel', from: 6.3, to: 8.0, dip: 14, height: 14 },
+      { type: 'bridge', from: 11.2, to: 12.6 },
+    ],
     theme: {
+      railColor: 0xffd36b,
+      tunnel: { strata: [0x1e4e6e, 0x2a6a8e, 0x184260, 0x3a7ea0, 0x225a7a, 0x2e7294, 0x164058], top: 0x4a9ac0, bandH: 2, emissive: 0x08304a, light: 0x8ff0ff, smooth: true, ribs: 0xd9c070 },
+      bridgeColor: 0xd6cbb2, pylonColor: 0xc8bc9e,
       skyTop: 0x3f8fe0, skyHorizon: 0xdcefff, fog: 0xd2e8f6, fogNear: 300, fogFar: 3200,
       suns: [{ dir: [0.4, 0.6, -0.4], color: 0xffffff, glow: 0xfff0c0, size: 1 }],
       sunDir: [0.4, 0.62, -0.4], sunColor: 0xfff6e6, sunIntensity: 2.3, hemiSky: 0xcfe6ff, hemiGround: 0x5a8a3a, hemiIntensity: 1.25,
@@ -131,9 +170,23 @@ export const PLANETS = [
   // ----------------------------------------------------------------- CORUSCANT
   {
     id: 'coruscant', name: 'Couloirs Aériens', planet: 'Coruscant',
-    desc: 'Pistes suspendues entre les gratte-ciel de la planète-ville, au milieu du trafic du crépuscule.',
-    layout: { seed: 53, n: 26, R: 1000, aspect: 1.3, rot: 0, harm: [[4, 0.12, 0.0], [2, 0.1, 1.0]], wobble: 0.18, elev: 28, baseY: 0, canyons: [[4, 9], [14, 19]], wOpen: 40, wCanyon: 26, hCanyon: 70, boulders: 0 },
+    desc: 'Circuit urbain technique : lignes droites et virages à angle droit, tunnels à travers les tours, toits gardés.',
+    style: 'technique',
+    layout: {
+      corners: [
+        [0, 0, 0, 34, 0], [0, 700, 25, 34, 0], [600, 700, 25, 34, 0], [600, 1200, 50, 34, 0], [1400, 1200, 40, 34, 0],
+        [1400, 500, 10, 34, 0], [1050, 500, 10, 34, 0], [1050, -100, -20, 34, 0], [1600, -100, -20, 34, 0],
+        [1600, -600, 0, 30, 70], [300, -600, 0, 34, 0], [300, -300, 0, 34, 0], [0, -300, 0, 34, 0],
+      ],
+      radius: 70, spacing: 230, seed: 53, features: ['clay', 'clay'], boulders: 0,
+    },
+    sections: [
+      { type: 'tunnel', near: [1000, 1200], len: 380, height: 14 },
+      { type: 'tunnel', near: [600, 950], len: 220, height: 13 },
+      { type: 'tunnel', near: [1600, -330], len: 240, height: 13 },
+    ],
     theme: {
+      tunnel: { strata: [0x3a3e4a, 0x5fe0ff, 0x30343e, 0x44485a, 0x2a2e38, 0x3e4252, 0x34384a], top: 0x2a2e38, bandH: 1.6, glow: [0, 1.2, 0, 0, 0, 0, 0, 0], light: 0xffd890, smooth: true, ribs: 0x5a5f70, shell: 'city' },
       skyTop: 0x2a2a5c, skyHorizon: 0xf2a06e, fog: 0xc8887a, fogNear: 260, fogFar: 2700,
       suns: [{ dir: [0.6, 0.08, -0.5], color: 0xffd0a0, glow: 0xff7a4a, size: 1.4 }],
       sunDir: [0.6, 0.35, -0.5], sunColor: 0xffc8a0, sunIntensity: 1.9, hemiSky: 0xb0a0e0, hemiGround: 0x5a4a5a, hemiIntensity: 1.2,
@@ -162,9 +215,16 @@ export const PLANETS = [
   // ----------------------------------------------------------------- KAMINO
   {
     id: 'kamino', name: 'Océan des Tempêtes', planet: 'Kamino',
-    desc: 'Pistes sur pilotis au-dessus d\'un océan démonté, sous une pluie battante.',
-    layout: { seed: 61, n: 24, R: 950, aspect: 1.2, rot: 0.5, harm: [[3, 0.14, 0.7]], wobble: 0.2, elev: 8, baseY: 32, canyons: [[6, 10], [16, 19]], wOpen: 40, wCanyon: 26, hCanyon: 40, boulders: 0 },
+    desc: 'Lignes droites interminables au-dessus de l\'océan, sauts entre les plateformes et passage dans la cité.',
+    style: 'rapide',
+    layout: { seed: 61, n: 18, R: 1000, aspect: 1.55, rot: 0.5, harm: [[2, 0.08, 0.3]], wobble: 0.12, elev: 6, baseY: 32, canyons: [], wOpen: 44, wCanyon: 26, hCanyon: 40, features: ['clay'], boulders: 0 },
+    sections: [
+      { type: 'jump', at: 3.5, gap: 38, height: 6 },
+      { type: 'tunnel', from: 7.2, to: 8.6, height: 14 },
+      { type: 'jump', at: 12.5, gap: 42, height: 7 },
+    ],
     theme: {
+      tunnel: { strata: [0xdfe6ea, 0xc9d2d8, 0x9fe0ff, 0xd6dde2, 0xb8c2c8, 0xe6ecef, 0xc0c9cf], top: 0xeef2f4, bandH: 1.8, glow: [0, 0, 0.6, 0, 0, 0, 0, 0], light: 0xbff0ff, smooth: true, ribs: 0xaab4bb, shell: 'city' },
       skyTop: 0x46525e, skyHorizon: 0x98a4ae, fog: 0x8c98a2, fogNear: 110, fogFar: 1600,
       suns: [], stars: 0,
       sunDir: [0.2, 0.8, -0.3], sunColor: 0xdfe8f0, sunIntensity: 1.3, hemiSky: 0xc8d4e0, hemiGround: 0x4a5a66, hemiIntensity: 1.6,
@@ -193,9 +253,18 @@ export const PLANETS = [
   // ----------------------------------------------------------------- DAGOBAH
   {
     id: 'dagobah', name: 'Marais Brumeux', planet: 'Dagobah',
-    desc: 'Brume épaisse, arbres noueux et eaux croupies : la visibilité est votre pire ennemie.',
-    layout: { seed: 71, n: 26, R: 900, aspect: 1.15, rot: 2.0, harm: [[3, 0.18, 1.2], [2, 0.1, 0.3]], wobble: 0.3, elev: 4, canyons: [[7, 10], [17, 20]], wOpen: 38, wCanyon: 22, hCanyon: 32 },
+    desc: 'Le plus technique : enchaînement de virages serrés dans la brume, ponts bas sur le marais et racine-tremplin.',
+    style: 'technique',
+    layout: { seed: 71, n: 38, R: 880, aspect: 1.15, rot: 2.0, harm: [[3, 0.14, 1.2], [7, 0.07, 0.3], [11, 0.03, 2.0]], wobble: 0.14, elev: 3, canyons: [], wOpen: 30, wCanyon: 22, hCanyon: 32, features: ['split', 'stone', 'split'], boulders: 3 },
+    sections: [
+      { type: 'bridge', from: 5.3, to: 7.2 },
+      { type: 'bridge', from: 16.4, to: 18.1 },
+      { type: 'jump', at: 34.0, gap: 26, height: 5 },
+      { type: 'bridge', from: 28.2, to: 30.4 },
+    ],
     theme: {
+      railColor: 0xb8e06a,
+      bridgeColor: 0x4a3a28, pylonColor: 0x3a2c1e,
       skyTop: 0x5e7a6c, skyHorizon: 0xa6bcae, fog: 0x9cb2a2, fogNear: 30, fogFar: 650,
       suns: [], stars: 0,
       sunDir: [0.3, 0.7, 0.3], sunColor: 0xd8e8c8, sunIntensity: 1.2, hemiSky: 0xb8d0b8, hemiGround: 0x3a4a2a, hemiIntensity: 1.4,
@@ -224,8 +293,14 @@ export const PLANETS = [
   // ----------------------------------------------------------------- GEONOSIS
   {
     id: 'geonosis', name: 'Flèches Rouges', planet: 'Geonosis',
-    desc: 'Désert rouge hérissé de flèches rocheuses, trois canyons étroits et un anneau dans le ciel.',
-    layout: { seed: 83, n: 26, R: 1100, aspect: 1.3, rot: 1.4, harm: [[3, 0.22, 0.0], [6, 0.04, 1.0]], wobble: 0.2, elev: 18, canyons: [[3, 6], [10, 13], [18, 21]], wOpen: 42, wCanyon: 22, hCanyon: 55 },
+    desc: 'La planète des canyons : trois gorges infestées de pillards, deux sauts au-dessus des gouffres et une fonderie en feu.',
+    style: 'technique',
+    layout: { seed: 83, n: 26, R: 1100, aspect: 1.3, rot: 1.4, harm: [[3, 0.22, 0.0], [6, 0.05, 1.0]], wobble: 0.2, elev: 18, canyons: [[3, 6], [10, 13], [18, 21]], wOpen: 40, wCanyon: 22, hCanyon: 55, features: ['stone'], boulders: 2 },
+    sections: [
+      { type: 'jump', at: 7.8, gap: 36 },
+      { type: 'flames', from: 14.0, to: 15.8, count: 6, kind: 'side' },
+      { type: 'jump', at: 23.4, gap: 32 },
+    ],
     theme: {
       skyTop: 0xa8644a, skyHorizon: 0xf0b282, fog: 0xe2a476, fogNear: 200, fogFar: 2600,
       suns: [{ dir: [0.4, 0.5, -0.5], color: 0xfff0d0, glow: 0xffb070, size: 1.2 }],
@@ -253,9 +328,18 @@ export const PLANETS = [
   // ----------------------------------------------------------------- BESPIN
   {
     id: 'bespin', name: 'Mer de Nuages', planet: 'Bespin',
-    desc: 'Une piste flottante au coucher du soleil, au-dessus d\'un océan de nuages roses.',
-    layout: { seed: 97, n: 26, R: 1000, aspect: 1.2, rot: 0.2, harm: [[2, 0.2, 2.2], [3, 0.08, 0.4]], wobble: 0.2, elev: 34, baseY: 0, canyons: [[6, 9], [17, 20]], wOpen: 40, wCanyon: 26, hCanyon: 45, boulders: 0 },
+    desc: 'Très rapide : trois sauts entre les plateformes flottantes au-dessus des nuages et deux traversées de la cité.',
+    style: 'rapide',
+    layout: { seed: 97, n: 18, R: 1150, aspect: 1.3, rot: 0.2, harm: [[2, 0.15, 2.2]], wobble: 0.12, elev: 26, baseY: 0, canyons: [], wOpen: 44, wCanyon: 26, hCanyon: 45, features: ['clay'], boulders: 0 },
+    sections: [
+      { type: 'jump', at: 2.6, gap: 40, height: 7 },
+      { type: 'tunnel', from: 5.3, to: 6.5, height: 14 },
+      { type: 'jump', at: 9.4, gap: 46, height: 8 },
+      { type: 'tunnel', from: 12.2, to: 13.2, height: 13 },
+      { type: 'jump', at: 15.6, gap: 36, height: 6 },
+    ],
     theme: {
+      tunnel: { strata: [0xe6d2bc, 0xff9a4a, 0xd8c0a8, 0xf0e2d0, 0xc8ae96, 0xe0cab2, 0xeedcc8], top: 0xffe8d0, bandH: 1.6, glow: [0, 0.8, 0, 0, 0, 0, 0, 0], light: 0xffd0a0, smooth: true, ribs: 0xc8ae96, shell: 'city' },
       skyTop: 0x7a6ac8, skyHorizon: 0xffc89a, fog: 0xf6c4a2, fogNear: 300, fogFar: 3000,
       suns: [{ dir: [0.7, 0.1, -0.4], color: 0xfff0d0, glow: 0xff9a6a, size: 1.5 }],
       sunDir: [0.7, 0.3, -0.4], sunColor: 0xffd6b0, sunIntensity: 2.1, hemiSky: 0xd8c0ff, hemiGround: 0xffb090, hemiIntensity: 1.3,
@@ -286,9 +370,19 @@ export const PLANETS = [
   // ----------------------------------------------------------------- KASHYYYK
   {
     id: 'kashyyyk', name: 'Forêt des Géants', planet: 'Kashyyyk',
-    desc: 'Arbres titanesques hauts de deux cents mètres, lagons turquoise et sentiers de planches.',
-    layout: { seed: 103, n: 28, R: 1150, aspect: 1.1, rot: 0.6, harm: [[2, 0.16, 1.4], [5, 0.06, 0.0]], wobble: 0.25, elev: 26, canyons: [[8, 12], [20, 23]], wOpen: 44, wCanyon: 26, hCanyon: 42 },
+    desc: 'Sentiers sinueux entre les arbres géants, passerelles de bois au-dessus des lagons et un tronc creux à traverser.',
+    style: 'technique',
+    layout: { seed: 103, n: 32, R: 1050, aspect: 1.1, rot: 0.6, harm: [[2, 0.14, 1.4], [5, 0.08, 0.0], [8, 0.03, 1.2]], wobble: 0.18, elev: 20, canyons: [], wOpen: 34, wCanyon: 26, hCanyon: 42, features: ['stone', 'stone'], boulders: 2 },
+    sections: [
+      { type: 'bridge', from: 4.3, to: 6.4, lift: 6 },
+      { type: 'tunnel', from: 10.4, to: 11.4, height: 13 },
+      { type: 'bridge', from: 15.5, to: 18.0, lift: 8 },
+      { type: 'jump', at: 23.7, gap: 32 },
+    ],
     theme: {
+      railColor: 0xffd890,
+      tunnel: { strata: [0x6a4a30, 0x5a3e28, 0x7a5638, 0x4e3422, 0x725034, 0x60442c, 0x82603e], top: 0x4a6a2a, bandH: 1.1, light: 0xffe0a0 },
+      bridgeColor: 0x8a6440, pylonColor: 0x6a4a30,
       skyTop: 0x4f9ad6, skyHorizon: 0xd6ecee, fog: 0xc4dccc, fogNear: 180, fogFar: 2200,
       suns: [{ dir: [0.45, 0.6, 0.3], color: 0xffffff, glow: 0xfff0c0, size: 1 }],
       sunDir: [0.45, 0.62, 0.3], sunColor: 0xfff4dc, sunIntensity: 2.1, hemiSky: 0xd0eaff, hemiGround: 0x4a6a2a, hemiIntensity: 1.2,
@@ -318,9 +412,17 @@ export const PLANETS = [
   // ----------------------------------------------------------------- JAKKU
   {
     id: 'jakku', name: 'Cimetière de Vaisseaux', planet: 'Jakku',
-    desc: 'Désert pâle jonché d\'épaves géantes de vaisseaux : passez sous leurs coques éventrées.',
-    layout: { seed: 113, n: 26, R: 1150, aspect: 1.4, rot: -0.8, harm: [[2, 0.15, 0.1], [3, 0.1, 1.9]], wobble: 0.2, elev: 14, canyons: [[10, 14]], wOpen: 46, wCanyon: 26, hCanyon: 38, features: ['clay', 'stone', 'clay', 'split', 'stone'] },
+    desc: 'Grandes lignes droites dans le désert : traversées de coques d\'épaves, épaves en feu et saut par-dessus les débris.',
+    style: 'rapide',
+    layout: { seed: 113, n: 16, R: 1150, aspect: 1.6, rot: -0.8, harm: [[2, 0.12, 0.1], [3, 0.06, 1.9]], wobble: 0.12, elev: 10, canyons: [], wOpen: 50, wCanyon: 26, hCanyon: 38, features: ['clay', 'stone'], boulders: 2 },
+    sections: [
+      { type: 'tunnel', from: 3.3, to: 4.4, height: 15 },
+      { type: 'flames', from: 6.3, to: 7.6, count: 6, kind: 'side' },
+      { type: 'jump', at: 9.5, gap: 36 },
+      { type: 'tunnel', from: 12.3, to: 13.1, height: 14 },
+    ],
     theme: {
+      tunnel: { strata: [0x5a6068, 0x4a5058, 0x6a7078, 0x3e444c, 0x7a5a48, 0x50565e, 0x646a72], top: 0x40464e, bandH: 2.4, light: 0xffc890, smooth: true, ribs: 0x7a8088, shell: 'box', shellStrata: [0x8a9098, 0x7a8088, 0x9aa0a8, 0x6a7078, 0x8a7a68, 0x80868e, 0x9a9088], shellTop: 0x6a7078 },
       skyTop: 0x86b2d8, skyHorizon: 0xf4e2c4, fog: 0xeedab8, fogNear: 260, fogFar: 3000,
       suns: [{ dir: [0.5, 0.65, -0.3], color: 0xffffff, glow: 0xffe8b0, size: 1 }],
       sunDir: [0.5, 0.65, -0.3], sunColor: 0xfff6e6, sunIntensity: 2.4, hemiSky: 0xd6e6ff, hemiGround: 0xc8a878, hemiIntensity: 1.25,
@@ -348,9 +450,16 @@ export const PLANETS = [
   // ----------------------------------------------------------------- CRAIT
   {
     id: 'crait', name: 'Plaine de Sel', planet: 'Crait',
-    desc: 'Croûte de sel blanc sur un sol rouge sang : chaque sillon laisse une traînée écarlate.',
-    layout: { seed: 127, n: 24, R: 1050, aspect: 1.5, rot: 0, harm: [[2, 0.1, 0.0], [4, 0.1, 0.8]], wobble: 0.18, elev: 4, canyons: [[5, 8], [15, 18]], wOpen: 46, wCanyon: 24, hCanyon: 44 },
+    desc: 'Le circuit le plus rapide : piste très large sur la plaine de sel, crevasses à sauter et grotte de cristaux rouges.',
+    style: 'rapide',
+    layout: { seed: 127, n: 14, R: 1150, aspect: 1.75, rot: 0, harm: [[2, 0.08, 0.0]], wobble: 0.1, elev: 3, canyons: [], wOpen: 56, wCanyon: 24, hCanyon: 44, features: ['stone'], boulders: 0 },
+    sections: [
+      { type: 'jump', at: 2.5, gap: 36, height: 6 },
+      { type: 'tunnel', from: 5.3, to: 6.4, dip: 8, height: 15 },
+      { type: 'jump', at: 9.5, gap: 40, height: 7 },
+    ],
     theme: {
+      tunnel: { strata: [0x3a1a1a, 0x2a1414, 0xe8402a, 0x341818, 0x241010, 0xff6a50, 0x2e1616], top: 0x1a0c0c, bandH: 2.6, glow: [0, 0, 1.3, 0, 0, 1.0, 0, 0], light: 0xff6a5a },
       skyTop: 0x8aa6c4, skyHorizon: 0xe8ecf0, fog: 0xe4e6ea, fogNear: 260, fogFar: 2800,
       suns: [{ dir: [0.35, 0.5, -0.5], color: 0xffffff, glow: 0xf0f0ff, size: 0.9 }],
       sunDir: [0.35, 0.55, -0.5], sunColor: 0xffffff, sunIntensity: 2.1, hemiSky: 0xe0e8ff, hemiGround: 0xb84a32, hemiIntensity: 1.3,
@@ -377,9 +486,19 @@ export const PLANETS = [
   // ----------------------------------------------------------------- SCARIF
   {
     id: 'scarif', name: 'Lagons Tropicaux', planet: 'Scarif',
-    desc: 'Îlots de sable fin, palmiers et lagons turquoise. Les arches marines vous attendent.',
-    layout: { seed: 131, n: 28, R: 1100, aspect: 1.2, rot: 1.0, harm: [[3, 0.16, 1.0], [4, 0.06, 0.3]], wobble: 0.25, elev: 12, canyons: [[7, 10], [19, 22]], wOpen: 44, wCanyon: 26, hCanyon: 34 },
+    desc: 'D\'île en île : trois ponts au-dessus des lagons, deux sauts au-dessus de l\'eau et une falaise gardée par des sentinelles.',
+    style: 'mixte',
+    layout: { seed: 131, n: 28, R: 1100, aspect: 1.2, rot: 1.0, harm: [[3, 0.16, 1.0], [4, 0.06, 0.3]], wobble: 0.2, elev: 8, canyons: [[19, 21]], wOpen: 42, wCanyon: 26, hCanyon: 34, features: ['stone', 'stone'], boulders: 1 },
+    sections: [
+      { type: 'bridge', from: 3.3, to: 4.6 },
+      { type: 'jump', at: 7.5, gap: 34 },
+      { type: 'bridge', from: 10.3, to: 11.8 },
+      { type: 'jump', at: 14.6, gap: 30 },
+      { type: 'bridge', from: 24.2, to: 25.6 },
+    ],
     theme: {
+      railColor: 0x6fe0ff,
+      bridgeColor: 0xe6dcc2, pylonColor: 0xb8b4a8,
       skyTop: 0x2f9ae8, skyHorizon: 0xd6f2ff, fog: 0xc8ecf6, fogNear: 300, fogFar: 3000,
       suns: [{ dir: [0.3, 0.7, -0.4], color: 0xffffff, glow: 0xfff6c8, size: 1.1 }],
       sunDir: [0.3, 0.72, -0.4], sunColor: 0xfffaf0, sunIntensity: 2.4, hemiSky: 0xd0f0ff, hemiGround: 0xe0c890, hemiIntensity: 1.25,
@@ -408,9 +527,19 @@ export const PLANETS = [
   // ----------------------------------------------------------------- YAVIN 4
   {
     id: 'yavin', name: 'Temples de la Jungle', planet: 'Yavin 4',
-    desc: 'Jungle épaisse, temples millénaires et une géante gazeuse orange qui domine le ciel.',
-    layout: { seed: 137, n: 28, R: 1050, aspect: 1.15, rot: -1.2, harm: [[2, 0.14, 0.6], [5, 0.08, 1.0]], wobble: 0.25, elev: 22, canyons: [[5, 8], [15, 18], [22, 24]], wOpen: 42, wCanyon: 24, hCanyon: 40 },
+    desc: 'Jungle sinueuse : souterrain sous un temple éclairé aux torches, pont sur la rivière, sauts et ruines gardées.',
+    style: 'technique',
+    layout: { seed: 137, n: 32, R: 1000, aspect: 1.15, rot: -1.2, harm: [[2, 0.12, 0.6], [5, 0.09, 1.0], [8, 0.03, 0.4]], wobble: 0.2, elev: 20, canyons: [[24, 26]], wOpen: 34, wCanyon: 24, hCanyon: 40, features: ['stone', 'split'], boulders: 2 },
+    sections: [
+      { type: 'tunnel', from: 4.3, to: 6.2, dip: 10, height: 14 },
+      { type: 'jump', at: 9.7, gap: 28 },
+      { type: 'bridge', from: 11.0, to: 12.1 },
+      { type: 'jump', at: 17.9, gap: 30 },
+    ],
     theme: {
+      railColor: 0xffb050,
+      tunnel: { strata: [0x6a6a5c, 0x58584c, 0x7a7a6a, 0x4a4c42, 0x72725e, 0x606254, 0x84846e], top: 0x3f6a32, bandH: 1.8, light: 0xffa840 },
+      bridgeColor: 0x8a8a7a, pylonColor: 0x74766a,
       skyTop: 0x4a8ec0, skyHorizon: 0xd6ead6, fog: 0xbad6be, fogNear: 170, fogFar: 2200,
       suns: [{ dir: [0.45, 0.6, 0.35], color: 0xffffff, glow: 0xfff0c0, size: 0.9 }],
       sunDir: [0.45, 0.62, 0.35], sunColor: 0xfff4dc, sunIntensity: 2.0, hemiSky: 0xd0eaff, hemiGround: 0x3a6a2a, hemiIntensity: 1.25,
@@ -442,9 +571,19 @@ export const PLANETS = [
   // ----------------------------------------------------------------- FELUCIA
   {
     id: 'felucia', name: 'Jardins Fongiques', planet: 'Felucia',
-    desc: 'Champignons géants aux couleurs vives, spores lumineuses et roches violettes.',
-    layout: { seed: 149, n: 26, R: 980, aspect: 1.2, rot: 2.4, harm: [[3, 0.2, 2.0], [2, 0.08, 0.4]], wobble: 0.28, elev: 20, canyons: [[6, 10], [16, 19]], wOpen: 42, wCanyon: 24, hCanyon: 42 },
+    desc: 'Virages enchaînés entre les champignons géants, geysers et jets de spores toxiques, tunnel organique lumineux.',
+    style: 'technique',
+    layout: { seed: 149, n: 32, R: 980, aspect: 1.2, rot: 2.4, harm: [[3, 0.18, 2.0], [6, 0.07, 0.4], [9, 0.03, 1.4]], wobble: 0.18, elev: 16, canyons: [], wOpen: 34, wCanyon: 24, hCanyon: 42, features: ['stone', 'stone'], boulders: 2 },
+    sections: [
+      { type: 'jump', at: 2.7, gap: 28 },
+      { type: 'flames', from: 4.3, to: 6.0, count: 6, kind: 'geyser', color: 'toxic' },
+      { type: 'tunnel', from: 9.3, to: 10.8, height: 14 },
+      { type: 'flames', from: 20.3, to: 22.0, count: 6, kind: 'side', color: 'toxic' },
+      { type: 'jump', at: 25.8, gap: 30 },
+    ],
     theme: {
+      tunnel: { strata: [0x4a2a5a, 0x3a1e4a, 0xff6ab0, 0x442656, 0x30183e, 0x6af0d0, 0x3e2250], top: 0x2a1438, bandH: 2.2, glow: [0, 0, 1.2, 0, 0, 1.0, 0, 0], light: 0xffe86a },
+      flames: 'toxic',
       skyTop: 0x7ab89a, skyHorizon: 0xf0eab4, fog: 0xd8e0aa, fogNear: 150, fogFar: 2000,
       suns: [{ dir: [0.4, 0.55, -0.5], color: 0xffffe0, glow: 0xf0f0a0, size: 1.2 }],
       sunDir: [0.4, 0.6, -0.5], sunColor: 0xfffbe0, sunIntensity: 2.0, hemiSky: 0xe0ffd0, hemiGround: 0x6a4a8a, hemiIntensity: 1.3,

@@ -2,13 +2,14 @@
 // arches, balises) et requêtes rapides (projection d'une position sur la piste).
 import * as THREE from 'three';
 import { toon, outlineMaterial, smoothNormalsClone, mergeColored, paint } from './toon.js';
-import { clamp, lerp, noise1, mulberry32 } from './util.js';
+import { clamp, lerp, smoothstep, noise1, mulberry32 } from './util.js';
 import { rockMaterial, facadeMaterial } from './materials.js';
+import { buildSections } from './sections.js';
 
 export { rockMaterial } from './materials.js';
 
 // Tube balayé le long d'un chemin plan (XY) avec rayon variable et bruit : arches et ponts naturels.
-function sweepTube(path, radii, radialSegs, noiseAmp, seed) {
+export function sweepTube(path, radii, radialSegs, noiseAmp, seed) {
   const pos = [];
   const idx = [];
   const B = new THREE.Vector3(0, 0, 1);
@@ -177,13 +178,107 @@ export class Track {
       this.curv[i] = s / (2 * W + 1);
     }
 
+    this.applySections(def.sections || []);
+
     let minY = Infinity, maxY = -Infinity, sumY = 0;
     for (let i = 0; i < N; i++) { minY = Math.min(minY, this.py[i]); maxY = Math.max(maxY, this.py[i]); sumY += this.py[i]; }
     this.minY = minY; this.maxY = maxY; this.avgY = sumY / N;
+    // niveau de l'eau : sous le point le plus bas de la piste à l'air libre (les souterrains peuvent passer dessous)
+    let minOpen = Infinity;
+    for (let i = 0; i < N; i++) if (!this.tunnel[i]) minOpen = Math.min(minOpen, this.py[i]);
+    if (!isFinite(minOpen)) minOpen = minY;
+    const wt = this.theme.water;
+    this.waterLevel = wt ? (wt.level ?? minOpen + (wt.offset ?? -3)) : null;
     this.obstacles = [];
     this.archSpans = []; // positions (index) des arches, pour le son "whoosh"
     this.group = new THREE.Group();
     this.group.name = 'track';
+  }
+
+  nearestIndex(x, z) {
+    let best = 0, bd = Infinity;
+    for (let i = 0; i < this.N; i++) {
+      const d = (x - this.px[i]) ** 2 + (z - this.pz[i]) ** 2;
+      if (d < bd) { bd = d; best = i; }
+    }
+    return best;
+  }
+
+  // Sections spéciales : tunnels (et souterrains), ponts, sauts, zones de flammes.
+  // Position par indice de point de contrôle (from/to/at) ou par coordonnées (near + len).
+  applySections(secs) {
+    const N = this.N;
+    this.tunnel = new Uint8Array(N);
+    this.deck = new Uint8Array(N);
+    this.gap = new Uint8Array(N);
+    this.embank = new Uint8Array(N);
+    this.jumpOf = new Int16Array(N).fill(-1);
+    this.tunnels = []; this.bridges = []; this.jumps = []; this.flameZones = [];
+    const range = (S) => {
+      if (S.near) {
+        const c = this.nearestIndex(S.near[0], S.near[1]);
+        const h = Math.round((S.len || 300) / 2 / this.step);
+        return [(c - h + N) % N, (c + h) % N];
+      }
+      return [this.indexAt(S.from), this.indexAt(S.to)];
+    };
+    const span = (i0, i1) => (i1 - i0 + N) % N;
+    const each = (i0, i1, fn) => { const n = span(i0, i1); for (let k = 0; k <= n; k++) fn((i0 + k) % N, k, n); };
+    for (const S of secs) {
+      if (S.type === 'tunnel') {
+        const [i0, i1] = range(S);
+        const dip = S.dip || 0;
+        const rampN = Math.max(2, Math.min(Math.round(230 / this.step), Math.floor(span(i0, i1) / 2.4)));
+        each(i0, i1, (i, k, n) => {
+          this.tunnel[i] = 1;
+          if (dip) this.py[i] -= dip * smoothstep(0, rampN, k) * smoothstep(0, rampN, n - k);
+        });
+        this.tunnels.push({ i0, i1, h: S.height || 13, name: S.name || null });
+      } else if (S.type === 'bridge') {
+        const [i0, i1] = range(S);
+        each(i0, i1, (i, k, n) => {
+          this.deck[i] = 1;
+          if (S.lift) this.py[i] += S.lift * Math.sin((Math.PI * k) / n);
+        });
+        this.bridges.push({ i0, i1 });
+      } else if (S.type === 'jump') {
+        const j = S.near ? this.nearestIndex(S.near[0], S.near[1]) : this.indexAt(S.at);
+        const gapN = Math.max(4, Math.round((S.gap || 34) / this.step));
+        const rampN = Math.round((S.ramp || 60) / this.step);
+        const landN = Math.round(110 / this.step);
+        const H = S.height ?? 7, drop = S.drop ?? 3;
+        const id = this.jumps.length;
+        for (let k = -rampN; k <= 0; k++) {
+          const u = (k + rampN) / rampN;
+          const i = (j + k + N) % N;
+          this.py[i] += H * u * u;
+          this.embank[i] = 1; this.jumpOf[i] = id;
+        }
+        for (let k = 1; k < gapN; k++) {
+          const i = (j + k) % N;
+          this.py[i] += H - (drop * k) / gapN;
+          this.gap[i] = 1; this.jumpOf[i] = id;
+        }
+        for (let k = 0; k <= landN; k++) {
+          const u = k / landN;
+          const i = (j + gapN + k) % N;
+          this.py[i] += (H - drop) * (1 - u * u * (3 - 2 * u));
+          this.embank[i] = 1; this.jumpOf[i] = id;
+        }
+        this.jumps.push({ lip: j, land: (j + gapN) % N, gapN });
+      } else if (S.type === 'flames') {
+        const [i0, i1] = range(S);
+        this.flameZones.push({ i0, i1, count: S.count || 6, kind: S.kind || 'side', color: S.color || null, n: span(i0, i1) });
+      }
+    }
+    // bords infranchissables : falaises, tunnels, ponts, barrières
+    this.hard = new Uint8Array(N);
+    for (let i = 0; i < N; i++) this.hard[i] = this.wallH[i] > 5 || this.tunnel[i] || this.deck[i] || this.railed ? 1 : 0;
+  }
+
+  // Niveau sous un pont ou un saut : l'eau / la lave, ou le fond du ravin.
+  underY(i) {
+    return this.waterLevel !== null ? this.waterLevel : this.py[i] - 40;
   }
 
   // Indice d'échantillon le plus proche d'un paramètre "at" (indice de point de contrôle fractionnaire).
@@ -261,6 +356,9 @@ export class Track {
     out.wallH = lerp(this.wallH[i0], this.wallH[i1], f);
     out.tx = this.tx[i0]; out.tz = this.tz[i0];
     out.rx = this.rx[i0]; out.rz = this.rz[i0];
+    out.hard = this.hard[i0] || this.hard[i1];
+    out.gap = this.gap[i0] || this.gap[i1];
+    out.tunnel = this.tunnel[i0];
     return out;
   }
 
@@ -272,8 +370,9 @@ export class Track {
     this.buildArches();
     this.buildBoulders();
     this.buildMarkers();
-    if (this.railed) this.buildRails();
-    if (this.elevated && this.elevated.pylons) this.buildPylons();
+    if (this.railed || this.bridges.length) this.buildRails();
+    if ((this.elevated && this.elevated.pylons) || this.bridges.length) this.buildPylons();
+    buildSections(this);
     this.buildStartLine();
     return this.group;
   }
@@ -283,9 +382,11 @@ export class Track {
     const roadPos = [], roadUV = [], roadIdx = [];
     const shPos = [], shCol = [], shIdx = [];
     const elev = !!this.elevated;
-    const cIn = new THREE.Color(elev ? th.elevated.deckColor || 0x555a66 : th.shoulder);
-    const cOut = new THREE.Color(elev ? th.elevated.deckColor || 0x555a66 : th.ground.base);
-    if (elev) cOut.multiplyScalar(0.7);
+    const deckBase = new THREE.Color(th.bridgeColor ?? (elev ? th.elevated.deckColor || 0x555a66 : 0x6a5a48));
+    const cDeck = deckBase.clone(), cDeckDark = deckBase.clone().multiplyScalar(0.7);
+    const cIn = new THREE.Color(th.shoulder), cOut = new THREE.Color(th.ground.base);
+    const cEmb = new THREE.Color(th.strata[1]);
+    const ci = new THREE.Color(), co = new THREE.Color();
     const TEX_LEN = 30;
     for (let k = 0; k <= N; k++) {
       const i = k % N;
@@ -294,20 +395,22 @@ export class Track {
       const v = (k * this.step) / TEX_LEN;
       roadPos.push(x - rx * e, y, z - rz * e, x + rx * e, y, z + rz * e);
       roadUV.push(0, v, 1, v);
-      // bas-côtés : gauche (ext, int) puis droite (int, ext)
-      // piste au sol : bas-côtés en pente douce ; piste suspendue : flanc vertical du tablier
-      const o = elev ? e + 0.25 : e + 10, dy = elev ? -3.2 : -1.1;
+      // bas-côtés : en pente douce au sol, flanc vertical pour un tablier (pont, piste suspendue)
+      // ou un remblai profond pour les rampes de saut
+      let o, dy;
+      if (elev || this.deck[i]) { o = e + 0.25; dy = -3.2; ci.copy(cDeck); co.copy(cDeckDark); }
+      else if (this.embank[i]) { o = e + 1.2; dy = -16; ci.copy(cIn); co.copy(cEmb); }
+      else { o = e + 10; dy = -1.1; ci.copy(cIn); co.copy(cOut); }
       shPos.push(x - rx * o, y + dy, z - rz * o, x - rx * e, y - 0.02, z - rz * e);
       shPos.push(x + rx * e, y - 0.02, z + rz * e, x + rx * o, y + dy, z + rz * o);
-      shCol.push(cOut.r, cOut.g, cOut.b, cIn.r, cIn.g, cIn.b, cIn.r, cIn.g, cIn.b, cOut.r, cOut.g, cOut.b);
+      shCol.push(co.r, co.g, co.b, ci.r, ci.g, ci.b, ci.r, ci.g, ci.b, co.r, co.g, co.b);
     }
     for (let k = 0; k < N; k++) {
+      if (this.gap[k] || this.gap[(k + 1) % N]) continue; // trou du saut : pas de piste
       const a = 2 * k, b = a + 1, c = a + 2, d = a + 3;
       roadIdx.push(a, b, c, b, d, c);
       const s = 4 * k, n = s + 4;
-      // gauche
       shIdx.push(s, s + 1, n, s + 1, n + 1, n);
-      // droite
       shIdx.push(s + 2, s + 3, n + 2, s + 3, n + 3, n + 2);
     }
     const rg = new THREE.BufferGeometry();
@@ -325,23 +428,48 @@ export class Track {
     sg.setAttribute('color', new THREE.Float32BufferAttribute(shCol, 3));
     sg.setIndex(shIdx);
     sg.computeVertexNormals();
-    const sh = new THREE.Mesh(sg, toon({ vertexColors: true, side: elev ? THREE.DoubleSide : THREE.FrontSide }));
-    this.group.add(sh);
-    if (elev) {
-      // dessous du tablier
+    this.group.add(new THREE.Mesh(sg, toon({ vertexColors: true, side: THREE.DoubleSide })));
+
+    // dessous des tabliers
+    const up = [], ui = [];
+    for (let k = 0; k <= N; k++) {
+      const i = k % N;
+      const e = this.width[i] / 2 + 0.25;
+      const x = this.px[i], y = this.py[i] - 3.2, z = this.pz[i], rx = this.rx[i], rz = this.rz[i];
+      up.push(x - rx * e, y, z - rz * e, x + rx * e, y, z + rz * e);
+    }
+    for (let k = 0; k < N; k++) {
+      const i = k, j = (k + 1) % N;
+      if (!(elev || this.deck[i] || this.deck[j]) || this.gap[i] || this.gap[j]) continue;
+      const a = 2 * k; ui.push(a, a + 2, a + 1, a + 1, a + 2, a + 3);
+    }
+    if (ui.length) {
       const ug = new THREE.BufferGeometry();
-      const up = [], ui = [];
-      for (let k = 0; k <= N; k++) {
-        const i = k % N;
-        const e = this.width[i] / 2 + 0.25;
-        const x = this.px[i], y = this.py[i] - 3.2, z = this.pz[i], rx = this.rx[i], rz = this.rz[i];
-        up.push(x - rx * e, y, z - rz * e, x + rx * e, y, z + rz * e);
-      }
-      for (let k = 0; k < N; k++) { const a = 2 * k; ui.push(a, a + 2, a + 1, a + 1, a + 2, a + 3); }
       ug.setAttribute('position', new THREE.Float32BufferAttribute(up, 3));
       ug.setIndex(ui);
       ug.computeVertexNormals();
-      this.group.add(new THREE.Mesh(ug, toon({ color: cOut })));
+      this.group.add(new THREE.Mesh(ug, toon({ color: cDeckDark })));
+    }
+
+    // faces verticales au bord des sauts (tremplin et réception)
+    if (this.jumps.length) {
+      const lp = [], li = [];
+      for (const J of this.jumps) {
+        for (const i of [J.lip, J.land]) {
+          const thin = elev || this.deck[i];
+          const e = this.width[i] / 2 + (thin ? 0.25 : 1.2);
+          const depth = thin ? 3.2 : 30; // tablier mince sur une piste suspendue, falaise sinon
+          const x = this.px[i], y = this.py[i], z = this.pz[i], rx = this.rx[i], rz = this.rz[i];
+          const b = lp.length / 3;
+          lp.push(x - rx * e, y, z - rz * e, x + rx * e, y, z + rz * e, x - rx * e, y - depth, z - rz * e, x + rx * e, y - depth, z + rz * e);
+          li.push(b, b + 1, b + 2, b + 1, b + 3, b + 2);
+        }
+      }
+      const lg = new THREE.BufferGeometry();
+      lg.setAttribute('position', new THREE.Float32BufferAttribute(lp, 3));
+      lg.setIndex(li);
+      lg.computeVertexNormals();
+      this.group.add(new THREE.Mesh(lg, toon({ color: cEmb, side: THREE.DoubleSide })));
     }
   }
 
@@ -613,6 +741,7 @@ export class Track {
     const m = new THREE.Matrix4(), c = new THREE.Color();
     let n = 0;
     for (let i = 0, k = 0; i < N - spacing / 2; i += spacing, k++) {
+      if (this.deck[i] || this.gap[i] || this.tunnel[i]) continue; // les ponts ont leurs barrières
       for (const side of [-1, 1]) {
         const lat = side * (this.width[i] / 2 + 0.9);
         m.makeTranslation(this.px[i] + this.rx[i] * lat, this.py[i] - 0.1, this.pz[i] + this.rz[i] * lat);
@@ -640,7 +769,7 @@ export class Track {
     n = 0;
     const q = new THREE.Quaternion(), sc = new THREE.Vector3(1, 1, 1), p = new THREE.Vector3();
     for (let i = 0, k = 0; i < N; i += pSpacing, k++) {
-      if (this.wallH[i] > 2 || !this.theme.poles || this.railed) continue;
+      if (this.wallH[i] > 2 || !this.theme.poles || this.railed || this.deck[i] || this.tunnel[i] || this.gap[i] || this.embank[i]) continue;
       for (const side of [-1, 1]) {
         const lat = side * (this.width[i] / 2 + 7);
         p.set(this.px[i] + this.rx[i] * lat, this.py[i] - 1, this.pz[i] + this.rz[i] * lat);
@@ -660,29 +789,33 @@ export class Track {
     this.group.add(pOut);
   }
 
-  // Barrières continues le long des deux bords (pistes urbaines, suspendues...)
+  // Barrières continues le long des deux bords (pistes urbaines, suspendues, ponts)
   buildRails() {
     const N = this.N, th = this.theme;
     const base = [], glow = [], bi = [], gi = [];
+    const railAt = (i) => (this.railed || this.deck[i]) && !this.gap[i];
     const stepK = 2;
-    let row = 0;
+    let prevRow = -1;
     for (let k = 0; k <= N; k += stepK) {
       const i = k % N;
+      if (!railAt(i)) { prevRow = -1; continue; }
       const e = this.width[i] / 2 + 0.3;
+      const r = base.length / 12; // 2 côtés x 2 sommets x 3 composantes par rangée
       for (const side of [-1, 1]) {
         const x = this.px[i] + this.rx[i] * e * side, z = this.pz[i] + this.rz[i] * e * side, y = this.py[i];
         base.push(x, y - 0.1, z, x, y + 0.85, z);
         glow.push(x, y + 0.85, z, x, y + 1.2, z);
       }
-      row++;
-    }
-    for (let r = 0; r < row - 1; r++) {
-      for (let sd = 0; sd < 2; sd++) {
-        const a = (r * 2 + sd) * 2, b = a + 1, c = ((r + 1) * 2 + sd) * 2, d = c + 1;
-        bi.push(a, c, b, b, c, d);
-        gi.push(a, c, b, b, c, d);
+      if (prevRow >= 0) {
+        for (let sd = 0; sd < 2; sd++) {
+          const a = (prevRow * 2 + sd) * 2, b = a + 1, c = (r * 2 + sd) * 2, d = c + 1;
+          bi.push(a, c, b, b, c, d);
+          gi.push(a, c, b, b, c, d);
+        }
       }
+      prevRow = r;
     }
+    if (!bi.length) return;
     const mk = (pos, idx) => {
       const g = new THREE.BufferGeometry();
       g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
@@ -690,28 +823,31 @@ export class Track {
       g.computeVertexNormals();
       return g;
     };
-    const dark = new THREE.Color(th.elevated ? th.elevated.deckColor || 0x3a3e4a : 0x3a3e4a).multiplyScalar(0.8);
+    const dark = new THREE.Color(th.elevated ? th.elevated.deckColor || 0x3a3e4a : th.bridgeColor ?? 0x3a3e4a).multiplyScalar(0.8);
     this.group.add(new THREE.Mesh(mk(base, bi), toon({ color: dark, side: THREE.DoubleSide })));
     this.group.add(new THREE.Mesh(mk(glow, gi), new THREE.MeshBasicMaterial({ color: th.railColor, side: THREE.DoubleSide })));
   }
 
-  // Piliers sous une piste suspendue
+  // Piliers sous une piste suspendue ou un pont
   buildPylons() {
     const N = this.N, el = this.elevated;
     const spacing = Math.round(48 / this.step);
     const geo = new THREE.CylinderGeometry(1, 1.35, 1, 8);
     geo.translate(0, -0.5, 0);
-    const count = Math.ceil(N / spacing) * 2;
-    const mesh = new THREE.InstancedMesh(geo, toon({ color: el.pylonColor || 0x888888 }), count);
+    const count = Math.ceil(N / spacing) * 2 + 8;
+    const col = el ? el.pylonColor || 0x888888 : this.theme.pylonColor ?? this.theme.bridgeColor ?? 0x7a6a58;
+    const mesh = new THREE.InstancedMesh(geo, toon({ color: col }), count);
     const out = new THREE.InstancedMesh(smoothNormalsClone(geo), outlineMaterial(0.06), count);
     out.instanceMatrix = mesh.instanceMatrix;
     const m = new THREE.Matrix4(), q = new THREE.Quaternion(), sc = new THREE.Vector3(), p = new THREE.Vector3();
     let n = 0;
-    for (let i = 0; i < N; i += spacing) {
-      if (this.wallH[i] > 5) continue; // dans un canyon d'immeubles, les façades portent la piste
+    for (let i = 0; i < N && n < count - 1; i += spacing) {
+      const onElev = el && el.pylons && this.wallH[i] <= 5;
+      if (!(onElev || this.deck[i]) || this.tunnel[i] || this.gap[i]) continue;
       const e = this.width[i] / 2;
       const top = this.py[i] - 3.1;
-      const len = top - el.floorY;
+      const bottom = el ? el.floorY : this.underY(i) - 8;
+      const len = top - bottom;
       if (len < 2) continue;
       for (const side of [-1, 1]) {
         p.set(this.px[i] + this.rx[i] * e * 0.55 * side, top, this.pz[i] + this.rz[i] * e * 0.55 * side);

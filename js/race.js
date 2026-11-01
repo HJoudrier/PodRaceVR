@@ -10,13 +10,14 @@ const _v = new THREE.Vector3();
 const _v2 = new THREE.Vector3();
 
 export class Race {
-  constructor({ scene, track, env, effects, audio, raiders, settings, hud, cockpitHud }) {
+  constructor({ scene, track, env, effects, audio, raiders, hazards, settings, hud, cockpitHud }) {
     this.scene = scene;
     this.track = track;
     this.env = env;
     this.effects = effects;
     this.audio = audio;
     this.raiders = raiders;
+    this.hazards = hazards || null;
     this.settings = settings;
     this.hud = hud;
     this.cockpitHud = cockpitHud;
@@ -159,16 +160,81 @@ export class Race {
   }
 
   respawn(racer) {
-    const back = racer.distance - 20;
-    const lat = 0;
+    // après une chute : on repart après le trou, sans réparation gratuite ; après une explosion : un peu en arrière
+    const fell = racer.respawnAt !== undefined;
+    const back = fell ? racer.respawnAt : racer.distance - 20;
     const s = this.track.wrapS(back);
-    racer.placeOnTrack(this.track, s, lat);
+    racer.placeOnTrack(this.track, s, 0);
     racer.distance = back;
     racer.trackS = s;
     racer.destroyed = false;
-    racer.damage.reset(65);
-    racer.damage.health.hull = 55;
+    racer.respawnAt = undefined;
+    if (!fell) {
+      racer.damage.reset(65);
+      racer.damage.health.hull = 55;
+    } else if (racer.damage.health.hull < 25) {
+      racer.damage.health.hull = 25;
+    }
     racer.hitCooldown = 1.5;
+  }
+
+  // Chute dans le trou d'un saut (vide, eau ou lave) : le pod réapparaît après la réception.
+  onFall(racer, J) {
+    if (racer.destroyed) return;
+    const t = this.track;
+    racer.destroyed = true;
+    racer.respawnTimer = 2.2;
+    let dsLand = J ? J.land * t.step - t.wrapS(racer.distance) : 40;
+    if (dsLand < 0) dsLand += t.length;
+    racer.respawnAt = racer.distance + dsLand + 30;
+    const w = t.theme.water;
+    const p = racer.pos.clone();
+    if (w && w.lava) {
+      p.y = t.waterLevel + 1;
+      this.effects.explosion(p);
+      this.audio.explosion(p);
+    } else if (w) {
+      p.y = t.waterLevel + 0.5;
+      for (let k = 0; k < 3; k++) this.effects.impactDust(p);
+      this.effects.sparks(p, null, 10, 12);
+      this.audio.splash(p);
+    }
+    if (racer.isPlayer) {
+      if (this.haptic) this.haptic([120, 60, 200]);
+      const sub = w ? (w.lava ? 'Englouti par la lave…' : 'Plouf ! Les droïdes vous repêchent…') : 'Trop lent pour franchir le saut…';
+      this.hud.message('CHUTE !', sub, 2.2, 'danger');
+      this.cockpitHud.message('CHUTE !', sub, 2.2, '#ff6644');
+    }
+  }
+
+  // Réception brutale après un saut
+  onLand(racer, vImpact) {
+    const dmg = (vImpact - 15) * 0.6;
+    if (dmg > 0.5) racer.damage.applyHit(dmg, 0, 'landing', this.time);
+    if (racer.isPlayer) {
+      this.shake = Math.max(this.shake || 0, Math.min(1, vImpact / 28));
+      this.audio.hit(Math.min(0.8, vImpact / 40));
+      if (this.haptic) this.haptic(Math.round(Math.min(90, vImpact * 3)));
+    }
+    this.effects.impactDust(new THREE.Vector3(racer.pos.x, racer.groundY + 0.3, racer.pos.z));
+    this.checkDestroyed(racer);
+  }
+
+  // Traversée d'un jet de flammes
+  onFlame(racer, jet) {
+    racer.damage.applyHit(7 + Math.random() * 6, jet.side ? -jet.side : 0, 'flame', this.time);
+    if (Math.random() < 0.35) racer.damage.triggerBreakdown(Math.random() < 0.5 ? 'engineL' : 'engineR');
+    this.effects.flash(racer.pos, jet.style.glow, 8);
+    if (racer.isPlayer) {
+      const msg = jet.style.label === 'FLAMMES' ? 'BRÛLÉ PAR LES FLAMMES !' : `TOUCHÉ : ${jet.style.label} !`;
+      this.hud.alert(msg);
+      this.cockpitHud.alert(msg);
+      this.shake = Math.max(this.shake || 0, 0.5);
+      this.flashDamage = 0.5;
+      this.audio.hit(0.4);
+      if (this.haptic) this.haptic([40, 20, 40]);
+    }
+    this.checkDestroyed(racer);
   }
 
   // Remet le joueur au centre de la piste (bouton "replacer").
@@ -323,6 +389,8 @@ export class Race {
       }
     }
     this.raiders.update(dt, this);
+    if (this.hazards) this.hazards.update(dt, this, this.camPos || this.player.pos);
+    this.playerCovered = !!this.track.tunnel[this.player.hint];
     this.updateLaps();
     this.updatePlaces();
     this.passArches();

@@ -5,6 +5,8 @@ export const TATOOINE = {
   id: 'tatooine',
   name: 'Boucle des Dunes',
   planet: 'Tatooine',
+  style: 'mixte',
+  sections: [],
   desc: 'Le grand classique : dunes brûlantes, canyons des pillards et arches d\'argile sous deux soleils.',
   points: [
     [0, 0, 0, 46, 0],          // 0  ligne de départ / arrivée

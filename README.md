@@ -8,30 +8,41 @@ HTML + CSS + JavaScript, sans étape de build.
 
 ## Contenu
 
-- **16 circuits sur 16 planètes**, à choisir dans le hangar (bouton **CHOISIR LE CIRCUIT**). Chaque circuit a son tracé,
-  ses canyons étroits avec tireurs embusqués, ses arches, son ciel, sa lumière, son décor et sa météo :
+- **16 circuits sur 16 planètes**, à choisir dans le hangar (bouton **CHOISIR LE CIRCUIT**). Chaque circuit a son
+  style de tracé (**rapide** : longues courbes et lignes droites ; **technique** : virages serrés enchaînés, piste
+  étroite ; **mixte**), ses mécaniques et son ambiance :
 
-| Planète | Circuit | Ambiance |
-|---|---|---|
-| Tatooine | Boucle des Dunes | dunes, deux soleils, canyons des pillards, arches d'argile, tribunes et dômes |
-| Hoth | Échine de Glace | neige, gorges de glace bleutée, pics de glace, blizzard |
-| Endor | Sentiers des Séquoias | forêt de séquoias géants, géante gazeuse dans le ciel, pollen |
-| Mustafar | Rivières de Lave | basalte noir, lacs de lave, falaises veinées de lave lumineuse, cendres et braises |
-| Naboo | Prairies des Lacs | collines vertes, lacs, palais à coupoles, tracé vallonné |
-| Coruscant | Couloirs Aériens | piste suspendue entre les gratte-ciel éclairés, barrières lumineuses, trafic aérien |
-| Kamino | Océan des Tempêtes | piste sur pilotis au-dessus de l'océan, cités sur pilotis, pluie battante |
-| Dagobah | Marais Brumeux | brume très dense, arbres noueux, eaux croupies, lucioles |
-| Geonosis | Flèches Rouges | désert rouge, flèches rocheuses, trois canyons, planète à anneau |
-| Bespin | Mer de Nuages | piste flottante au coucher du soleil, mer de nuages, tours de la cité, trafic |
-| Kashyyyk | Forêt des Géants | arbres de 100 à 250 m, lagons turquoise |
-| Jakku | Cimetière de Vaisseaux | désert pâle, épaves géantes, arches de carcasses métalliques |
-| Crait | Plaine de Sel | croûte de sel blanc sur sol rouge, sillons écarlates, cristaux |
-| Scarif | Lagons Tropicaux | îlots de sable, palmiers, lagons, arches marines |
-| Yavin 4 | Temples de la Jungle | jungle, temples à degrés, géante gazeuse orange, lucioles |
-| Felucia | Jardins Fongiques | champignons géants multicolores, roches violettes, spores lumineuses |
+| Planète | Circuit | Style | Mécaniques |
+|---|---|---|---|
+| Tatooine | Boucle des Dunes | mixte | le classique : canyons des pillards, arches de pierre et d'argile, rochers |
+| Hoth | Échine de Glace | mixte | grotte de glace souterraine, 2 sauts au-dessus des crevasses, courte gorge gardée |
+| Endor | Sentiers des Séquoias | technique | piste étroite entre les séquoias, passerelle sur un ravin, tronc creux, 2 sauts |
+| Mustafar | Rivières de Lave | mixte | 2 ponts sur la lave, saut au-dessus d'un fleuve de lave, tube de lave, jets de flammes et geysers |
+| Naboo | Prairies des Lacs | rapide | 2 longs ponts sur les lacs, tunnel sous l'eau |
+| Coruscant | Couloirs Aériens | technique | circuit urbain à angles droits, 3 tunnels à travers les tours, toits gardés, trafic |
+| Kamino | Océan des Tempêtes | rapide | lignes droites sur pilotis, 2 sauts entre plateformes au-dessus de l'océan, passage dans la cité |
+| Dagobah | Marais Brumeux | technique | le plus sinueux : brume dense, 3 ponts bas sur le marais, racine-tremplin |
+| Geonosis | Flèches Rouges | technique | 3 canyons infestés de pillards, 2 sauts au-dessus des gouffres, fonderie en feu |
+| Bespin | Mer de Nuages | rapide | 3 sauts entre plateformes flottantes au-dessus des nuages, 2 traversées de la cité |
+| Kashyyyk | Forêt des Géants | technique | passerelles de bois arquées au-dessus des lagons, tronc creux, saut |
+| Jakku | Cimetière de Vaisseaux | rapide | 2 traversées de coques d'épaves, épaves en feu, saut |
+| Crait | Plaine de Sel | rapide | le plus rapide : piste très large, 2 sauts au-dessus des crevasses, grotte de cristaux rouges |
+| Scarif | Lagons Tropicaux | mixte | d'île en île : 3 ponts au-dessus des lagons, 2 sauts au-dessus de l'eau, falaise gardée |
+| Yavin 4 | Temples de la Jungle | technique | souterrain sous un temple éclairé aux torches, pont sur la rivière, 2 sauts, ruines gardées |
+| Felucia | Jardins Fongiques | technique | geysers et jets de spores toxiques, tunnel organique lumineux, 2 sauts |
 
-- Les tracés des 15 nouvelles planètes sont générés à partir de quelques paramètres (forme, longueur, relief,
-  position des canyons) et validés automatiquement : pas de chevauchement, départ dégagé, virages praticables.
+- **Mécaniques de parcours** :
+  - **Tunnels et souterrains** : grottes de glace, tubes de lave, tunnel sous un lac, coques d'épaves, troncs creux,
+    passages à travers les immeubles. Rangées de lumières qui défilent, son des moteurs qui résonne, pas de météo dedans.
+  - **Sauts** : tremplin puis trou au-dessus du vide, de l'eau ou de la lave. Il faut arriver assez vite (environ
+    150 km/h minimum), sinon c'est la chute : le pod est repêché après le trou, avec le temps perdu.
+  - **Ponts** au-dessus de l'eau, des marais, de la lave ou des ravins, avec barrières.
+  - **Jets de flammes** (feu, spores toxiques) : latéraux ou en geysers, avec une alerte lumineuse avant chaque
+    salve. Ils brûlent le pod et peuvent enflammer un moteur.
+  - **Canyons avec tireurs embusqués** : seulement sur 7 circuits (Tatooine, Hoth, Mustafar, Coruscant, Geonosis,
+    Scarif, Yavin 4).
+- Les tracés générés sont validés automatiquement : pas de chevauchement, départ dégagé, virages praticables,
+  sauts placés sur des portions assez droites.
 - **Sensation de vitesse** : pods à 550–850 km/h au ras du sol, lignes de vitesse, poussière, balises et mâts qui défilent,
   parois de canyon toutes proches, vent et moteurs synthétisés (effet Doppler sur les concurrents), « whoosh » sous les arches,
   champ de vision qui s'élargit et vibrations à l'écran, vibrations du cockpit en VR.
@@ -135,6 +146,9 @@ js/tracks/index.js    catalogue des circuits et aperçus pour le menu
 js/materials.js       matériaux calculés dans le shader : strates rocheuses (veines de lave), façades à fenêtres
 js/props.js           décors procéduraux (arbres, champignons, flèches, cristaux, immeubles, épaves, nuages...)
 js/weather.js         météo autour du pilote et trafic aérien
+js/sections.js        géométrie des tunnels et souterrains (parois, lumières, nervures, collines, façades)
+js/hazards.js         jets de flammes et geysers (cycle, collisions, évitement par l'IA)
+js/postfx.js          flou de mouvement radial
 js/track.js           spline, géométrie de la piste, falaises, arches, requêtes de position sur la piste
 js/environment.js     ciel aux deux soleils, dunes, mesas, montagnes, rochers, tribunes et portique de départ
 js/podModel.js        modèles procéduraux des podracers et leur animation
@@ -152,7 +166,9 @@ js/config.js          podracers, pilotes, équilibrage, réglages par défaut
 ```
 
 Pour ajouter un circuit, ajoutez une entrée dans `js/tracks/planets.js` : un `layout` (graine, rayon, harmoniques
-de forme, relief, indices des canyons, largeurs) et un `theme` qui ne redéfinit que ce qui change par rapport au
+de forme, relief, indices des canyons, largeurs — ou des `corners` pour un tracé urbain à angles droits), des
+`sections` (`tunnel`, `bridge`, `jump`, `flames`, positionnées par indice de point de contrôle ou par coordonnées)
+et un `theme` qui ne redéfinit que ce qui change par rapport au
 thème par défaut (`js/tracks/common.js`) : ciel, soleils, planète dans le ciel, sol, eau ou lave, piste suspendue,
 barrières, strates des falaises, façades, décors, météo, trafic, couleurs des tireurs. On peut aussi donner
 directement des `points` dessinés à la main, comme pour Tatooine.

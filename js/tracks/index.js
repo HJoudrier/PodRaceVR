@@ -2,7 +2,7 @@
 import * as THREE from 'three';
 import { TATOOINE } from './tatooine.js';
 import { PLANETS } from './planets.js';
-import { resolveTrack } from './common.js';
+import { resolveTrack, sectionSpan } from './common.js';
 
 export const TRACKS = [TATOOINE, ...PLANETS];
 
@@ -22,11 +22,18 @@ export function trackPreview(id) {
   const n = def.points.length;
   const line = [];
   const S = 160;
+  const spans = (def.sections || []).map((s) => ({ type: s.type, span: sectionSpan(s, def.points) }));
+  const inSpan = (tt, type) => spans.some((s) => s.type === type && tt >= s.span[0] && tt <= s.span[1]);
   for (let k = 0; k <= S; k++) {
     const t = (k / S) % 1;
     const p = curve.getPoint(t);
-    const i0 = Math.floor(t * n) % n;
-    line.push({ x: p.x, z: p.z, canyon: def.points[i0][4] > 0 && def.points[(i0 + 1) % n][4] > 0 });
+    const tt = t * n;
+    const i0 = Math.floor(tt) % n;
+    line.push({
+      x: p.x, z: p.z,
+      canyon: def.points[i0][4] > 0 && def.points[(i0 + 1) % n][4] > 0,
+      tunnel: inSpan(tt, 'tunnel'), bridge: inSpan(tt, 'bridge'), jump: inSpan(tt, 'jump'), flames: inSpan(tt, 'flames'),
+    });
   }
   let minX = Infinity, maxX = -Infinity, minZ = Infinity, maxZ = -Infinity;
   for (const p of line) { minX = Math.min(minX, p.x); maxX = Math.max(maxX, p.x); minZ = Math.min(minZ, p.z); maxZ = Math.max(maxZ, p.z); }

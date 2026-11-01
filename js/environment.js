@@ -189,7 +189,7 @@ export class Environment {
     scene.add(this.group);
     const th = this.theme;
     this.elevated = th.elevated || null;
-    this.waterLevel = th.water ? (th.water.level ?? track.minY + (th.water.offset ?? -3)) : -Infinity;
+    this.waterLevel = track.waterLevel !== null ? track.waterLevel : -Infinity;
     this.amp = (th.dunes && th.dunes.amp) ?? 1;
     this.freq = (th.dunes && th.dunes.freq) ?? 1;
     // niveau de base des dunes : autour de la piste, ou juste au-dessus de l'eau pour faire apparaître lacs et lagons
@@ -207,9 +207,23 @@ export class Environment {
     const n = this.grid.nearest(x, z, 300);
     const d = this.baseline + this.dunes(x, z);
     if (n.i < 0) return d - 1.6;
-    const ty = this.track.py[n.i] - 1.6;
+    const t = this.track;
+    let ty = t.py[n.i] - 1.6;
+    // sous un pont ou le trou d'un saut, le sol plonge : eau, lave ou ravin
+    if (t.deck[n.i] || t.gap[n.i]) {
+      ty = t.waterLevel !== null ? Math.min(t.waterLevel - 7, t.py[n.i] - 12) : t.py[n.i] - 38;
+    }
     const b = smoothstep(95, 285, n.d);
     return lerp(ty, d - 1.6, b);
+  }
+
+  // Le décor ne doit ni traverser la colline d'un tunnel ni encombrer un pont.
+  blockedBySection(nn) {
+    if (nn.i < 0) return false;
+    const t = this.track, ne = t.width[nn.i] / 2;
+    if (t.tunnel[nn.i] && nn.d < ne + 85) return true;
+    if ((t.deck[nn.i] || t.gap[nn.i] || t.embank[nn.i]) && nn.d < ne + 24) return true;
+    return false;
   }
 
   build() {
@@ -384,6 +398,7 @@ export class Environment {
             const nn = this.grid.nearest(x, z, s + 120);
             if (nn.i >= 0 && nn.d < t.width[nn.i] / 2 + s + 2) continue;
             if (nn.i >= 0 && t.wallH[nn.i] > 2 && nn.d < t.width[nn.i] / 2 + 100) continue;
+            if (this.blockedBySection(nn)) continue;
             y = (this.elevated ? floorY : this.heightAt(x, z)) + s * 0.25;
           }
           sx = s * (0.8 + rnd() * 0.5); sy = s * (0.6 + rnd() * 0.7); sz = s * (0.8 + rnd() * 0.5);
@@ -414,6 +429,7 @@ export class Environment {
               const ne = t.width[nn.i] / 2;
               const need = place === 'plateau' ? ne + 18 : t.wallH[nn.i] > 2 ? ne + 100 + clearR : ne + clearR + 4;
               if (nn.d < need) continue;
+              if (this.blockedBySection(nn)) continue;
             }
           }
           if (P.yRange) y = lerp(P.yRange[0], P.yRange[1], rnd());
@@ -549,9 +565,10 @@ export class Environment {
     });
   }
 
-  update(camera, dt = 0, pixelScale = 400) {
+  update(camera, dt = 0, pixelScale = 400, covered = false) {
     if (this.sky) camera.getWorldPosition(this.sky.position);
-    if (this.weather && this.weather.layers.length) {
+    if (this.weather) for (const l of this.weather.layers) l.points.visible = !covered; // pas de pluie dans un tunnel
+    if (this.weather && this.weather.layers.length && !covered) {
       camera.getWorldPosition(this._cam || (this._cam = new THREE.Vector3()));
       this.weather.update(dt, this._cam, pixelScale);
     }

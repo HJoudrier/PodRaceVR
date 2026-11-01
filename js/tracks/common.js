@@ -1,5 +1,5 @@
 // Outils communs aux circuits : thème par défaut, fusion de thèmes, générateur de tracés.
-import { mulberry32 } from '../util.js';
+import { mulberry32, lerp, smoothstep } from '../util.js';
 
 // Thème par défaut (désert de Tatooine). Chaque circuit ne redéfinit que ce qui change.
 export const DEFAULT_THEME = {
@@ -61,6 +61,10 @@ export const DEFAULT_THEME = {
   weather: null,     // 'snow' | 'rain' | 'ash' | 'pollen' | 'fireflies' | 'dust' | 'spores' (ou tableau)
   traffic: null,     // { count, colors }
   raiders: { name: 'PILLARD', robe: 0xc9b48e, sash: 0xd2401f, head: 0xd8c7a3 },
+  tunnel: null,      // { strata, top, bandH, glow, emissive, light, smooth, ribs, shell: 'rock' | 'city' | 'box' }
+  bridgeColor: null, // couleur des tabliers de pont
+  pylonColor: null,
+  flames: 'fire',    // style des jets de flammes : 'fire' | 'toxic' | 'plasma'
 };
 
 function isPlainObject(v) {
@@ -107,8 +111,50 @@ export function generatePoints(L) {
   return pts;
 }
 
+// Tracé urbain : coins à angle droit arrondis (rayon r) et longues lignes droites.
+// corners = [[x, z, y, largeur, hauteur des façades], ...] ; les attributs valent pour la ligne droite qui suit.
+export function rectilinearPoints(R) {
+  const C = R.corners, n = C.length, r = R.radius || 70, sp = R.spacing || 240;
+  const pts = [];
+  let firstSeg = 0;
+  for (let k = 0; k < n; k++) {
+    const P = C[k], Q = C[(k + 1) % n];
+    const dx = Q[0] - P[0], dz = Q[1] - P[1];
+    const L = Math.hypot(dx, dz);
+    const ux = dx / L, uz = dz / L;
+    const segN = Math.max(1, Math.round((L - 2 * r) / sp));
+    if (k === 0) firstSeg = segN + 1;
+    for (let s = 0; s <= segN; s++) {
+      const d = r + (L - 2 * r) * (s / segN);
+      const y = lerp(P[2], Q[2], smoothstep(0, 1, d / L));
+      pts.push([Math.round(P[0] + ux * d), Math.round(y * 10) / 10, Math.round(P[1] + uz * d), P[3], P[4]]);
+    }
+  }
+  // le départ au milieu de la première ligne droite
+  const shift = Math.floor(firstSeg / 2);
+  return pts.slice(shift).concat(pts.slice(0, shift));
+}
+
+// Position (en indice de point de contrôle) d'une section, pour que le décor automatique l'évite.
+export function sectionSpan(S, pts) {
+  const n = pts.length;
+  const nearest = (x, z) => {
+    let b = 0, bd = Infinity;
+    pts.forEach((p, i) => { const d = (p[0] - x) ** 2 + (p[2] - z) ** 2; if (d < bd) { bd = d; b = i; } });
+    return b;
+  };
+  if (S.near) {
+    const c = nearest(S.near[0], S.near[1]);
+    const sp = Math.hypot(pts[(c + 1) % n][0] - pts[c][0], pts[(c + 1) % n][2] - pts[c][2]) || 200;
+    const h = (S.len || 300) / 2 / sp;
+    return [c - h, c + h];
+  }
+  if (S.type === 'jump') return [S.at - 0.6, S.at + 0.7];
+  return [S.from, S.to];
+}
+
 // Arches, ponts naturels et rochers placés automatiquement le long du tracé.
-export function generateFeatures(L, pts) {
+export function generateFeatures(L, pts, sections = []) {
   const rnd = mulberry32(L.seed * 7 + 3);
   const n = pts.length;
   const H = (i) => pts[((i % n) + n) % n][4];
@@ -120,7 +166,9 @@ export function generateFeatures(L, pts) {
     if (H(i) > 0 && H(i + 1) > 0 && rnd() < (L.bridgeRate ?? 0.75)) arches.push({ at: i + 0.3 + rnd() * 0.4, type: 'bridge' });
   }
   // zones ouvertes : arches de pierre, colonnades, arche à pilier central
-  const open = (i) => H(i - 1) === 0 && H(i) === 0 && H(i + 1) === 0 && H(i + 2) === 0;
+  const spans = sections.map((S) => sectionSpan(S, pts));
+  const free = (i) => spans.every(([a, b]) => i + 1.5 < a - 0.5 || i > b + 0.5);
+  const open = (i) => H(i - 1) === 0 && H(i) === 0 && H(i + 1) === 0 && H(i + 2) === 0 && free(i);
   const cands = [];
   for (let i = 2; i < n - 2; i++) if (open(i)) cands.push(i);
   for (let i = cands.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [cands[i], cands[j]] = [cands[j], cands[i]]; }
@@ -154,11 +202,12 @@ export function resolveTrack(def) {
   if (def._resolved) return def._resolved;
   const out = { ...def };
   if (!out.points) {
-    out.points = generatePoints(def.layout);
-    const f = generateFeatures(def.layout, out.points);
+    out.points = def.layout.corners ? rectilinearPoints(def.layout) : generatePoints(def.layout);
+    const f = generateFeatures(def.layout, out.points, def.sections || []);
     if (!out.arches) out.arches = f.arches;
     if (!out.boulders) out.boulders = f.boulders;
   }
+  out.sections = def.sections || [];
   out.arches = out.arches || [];
   out.boulders = out.boulders || [];
   out.theme = mergeTheme(def.theme);

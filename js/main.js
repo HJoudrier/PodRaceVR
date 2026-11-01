@@ -6,6 +6,7 @@ import { Environment, disposeTree } from './environment.js';
 import { Effects } from './effects.js';
 import { AudioSys } from './audio.js';
 import { Raiders } from './raiders.js';
+import { Hazards } from './hazards.js';
 import { Input } from './input.js';
 import { TouchControls, isTouchDevice } from './touch.js';
 import { Hud, CockpitHud } from './hud.js';
@@ -63,7 +64,7 @@ const vignette = (() => {
 })();
 camera.add(vignette);
 
-let track, env, effects, audio, raiders, input, hud, cockpitHud, menu, touch;
+let track, env, effects, audio, raiders, hazards, input, hud, cockpitHud, menu, touch;
 let touchSeen = false;
 let xrSupported = false;
 let worldDensity = null;
@@ -129,12 +130,14 @@ function buildWorld(id) {
   if (track) { scene.remove(track.group); disposeTree(track.group); }
   if (env) env.dispose();
   if (raiders) raiders.dispose();
+  if (hazards) hazards.dispose();
   const def = getTrackDef(id);
   track = new Track(def);
   scene.add(track.build());
   worldDensity = qualityDensity();
   env = new Environment(scene, track, { density: worldDensity }).build();
   raiders = new Raiders(scene, track, effects, audio).build();
+  hazards = new Hazards(scene, track, effects, audio).build();
   if (hud) hud.setTrack(track);
   if (renderer && effects) applyQuality();
 }
@@ -187,6 +190,7 @@ function applyQuality() {
   effects.lineStretch = (BLUR[settings.motionBlur] || BLUR.normal)[1];
   motionBlur.setQuality(q);
   if (env.rockOutline) env.rockOutline.visible = q !== 'basse';
+  if (hazards) hazards.fxScale = f;
   if (race) race.fxScale = f;
 }
 
@@ -333,7 +337,8 @@ function beginRace() {
   disposeShowroom();
   showroom = null;
   effects.clear();
-  race = new Race({ scene, track, env, effects, audio, raiders, settings, hud, cockpitHud });
+  hazards.time = 0;
+  race = new Race({ scene, track, env, effects, audio, raiders, hazards, settings, hud, cockpitHud });
   race.fxScale = effects.quality;
   race.haptic = (pattern) => {
     if (touch.visible && navigator.vibrate) { try { navigator.vibrate(pattern); } catch (e) { /* refusé */ } }
@@ -454,7 +459,17 @@ function updateCamera(dt) {
           camera.position.z -= q.rz * over;
         }
       }
-      if (camera.position.y < q.y + 1.5) camera.position.y = q.y + 1.5;
+      if (camera.position.y < q.y + 1.5 && !q.gap) camera.position.y = q.y + 1.5;
+      // dans un tunnel, la caméra reste sous la voûte et entre les parois
+      if (q.tunnel) {
+        const lim = q.width / 2 - 1;
+        if (Math.abs(q.lateral) > lim) {
+          const over = (Math.abs(q.lateral) - lim) * Math.sign(q.lateral);
+          camera.position.x -= q.rx * over;
+          camera.position.z -= q.rz * over;
+        }
+        if (camera.position.y > q.y + 9) camera.position.y = q.y + 9;
+      }
       camera.position.x += (Math.random() - 0.5) * shake * 0.5;
       camera.position.y += (Math.random() - 0.5) * shake * 0.5 + Math.sin(race.time * 41) * sf * 0.03;
       tmpV.set(p.pos.x - bx * 12, p.pos.y + 1.2, p.pos.z - bz * 12);
@@ -533,6 +548,8 @@ function loop() {
       renderer.getDrawingBufferSize(bufSize);
       effects.setPixelScale(bufSize.y / 2);
       effects.update(dt, listener.pos, p.vel, Math.abs(p.speed), p.boost, p.groundY);
+      race.camPos = listener.pos;
+      audio.covered = !!race.playerCovered;
       audio.update(dt, listener, p, race.racers.filter((r) => !r.isPlayer), mode === 'paused');
       const src = touch.visible && input.source === 'keyboard' ? 'touch' : input.source;
       if (!isXR()) {
@@ -545,7 +562,7 @@ function loop() {
       effects.setPixelScale(bufSize.y / 2);
       effects.update(dt, camera.position, tmpV3.set(0, 0, 0), 0, false, 0);
     }
-    env.update(camera, dt, bufSize.y / 2);
+    env.update(camera, dt, bufSize.y / 2, !!(race && race.playerCovered));
   } catch (e) {
     showError(e);
     renderer.setAnimationLoop(null);

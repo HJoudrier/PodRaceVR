@@ -48,6 +48,9 @@ export class Racer {
     this.respawnTimer = 0;
     this.hitCooldown = 0;
     this.groundY = 0;
+    this.vy = 0;               // vitesse verticale (sauts)
+    this.vyEst = 0;
+    this.airborne = false;
 
     // IA
     this.ai = {
@@ -74,6 +77,8 @@ export class Racer {
     this.yaw = Math.atan2(-p.tx, -p.tz);
     this.vel.set(0, 0, 0);
     this.speed = 0;
+    this.vy = 0;
+    this.airborne = false;
     this.hint = p.index;
     this.trackS = track.wrapS(s);
     this.lateral = lat;
@@ -119,6 +124,11 @@ export class Racer {
     const sp = Math.abs(vF);
     const steerIn = clamp(input.steer * f.steer + f.steerBias + f.imbalance * 0.3, -1.4, 1.4);
     let yawRate = ph.turnRate * steerIn * clamp(sp / 25, 0, 1) * (1 - 0.32 * clamp(sp / 230, 0, 1));
+    if (this.airborne) {
+      yawRate *= 0.35; // peu de contrôle en l'air...
+      // ...mais les répulseurs « accrochent » la piste : le pod suit sa courbure pendant le vol
+      yawRate -= track.curv[this.hint] * vF;
+    }
     if (input.brake > 0.1 && sp > 30) yawRate *= 1 + 0.35 * input.brake; // freinage aérodynamique
     if (vF < 0) yawRate = -yawRate;
     this.yaw -= yawRate * dt;
@@ -156,7 +166,7 @@ export class Racer {
     const latR = q.lateral + (fx * q.rx + fz * q.rz) * dR;
     const pts = [[latF, FRONT_R], [latR, REAR_R], [q.lateral, 2.2]];
     let hardLimit, wall;
-    if (q.wallH > 5 || track.railed) { hardLimit = e + 0.4; wall = true; }
+    if (q.hard) { hardLimit = e + 0.4; wall = true; }
     else { hardLimit = e + 72; wall = false; }
 
     for (const [lat, r] of pts) {
@@ -223,13 +233,40 @@ export class Racer {
       }
     }
 
-    // hauteur : piste, bas-côtés, sable
-    let gy = q.y;
-    const al = Math.abs(q.lateral);
-    if (al > e) gy -= Math.min(1.2, (al - e) * 0.11);
+    // hauteur : piste, bas-côtés, sable — ou le vide au-dessus du trou d'un saut
+    let gy;
+    if (q.gap) gy = track.underY(q.index);
+    else {
+      gy = q.y;
+      const al = Math.abs(q.lateral);
+      if (al > e) gy -= Math.min(1.2, (al - e) * 0.11);
+    }
     this.groundY = gy;
     const target = gy + HOVER + Math.sin(ctx.time * 2.1 + this.name.length) * 0.08;
-    this.pos.y = damp(this.pos.y, target, 10, dt);
+    if (this.airborne) {
+      // vol balistique (gravité renforcée : les pods « plaquent » vite au sol)
+      this.vy -= 30 * dt;
+      this.pos.y += this.vy * dt;
+      const J = track.jumps[track.jumpOf[q.index]];
+      if (q.gap) {
+        const landY = J ? track.py[J.land] + HOVER : gy + HOVER;
+        if (this.pos.y < landY - 5) { ctx.onFall(this, J); return; }
+      } else if (this.pos.y <= target) {
+        if (target - this.pos.y > 3.5 && J) { ctx.onFall(this, J); return; } // percute le bord de la réception
+        if (this.vy < -15) ctx.onLand(this, -this.vy);
+        this.pos.y = target;
+        this.vy = 0;
+        this.airborne = false;
+      }
+    } else if (target < this.pos.y - 2.2) {
+      // le sol se dérobe (bout du tremplin) : envol avec la vitesse verticale acquise sur la rampe
+      this.airborne = true;
+      this.vy = clamp(this.vyEst, -4, 12);
+    } else {
+      const prevY = this.pos.y;
+      this.pos.y = damp(this.pos.y, target, 10, dt);
+      this.vyEst = (this.pos.y - prevY) / Math.max(dt, 1e-4);
+    }
 
     // progression le long de la piste
     this.advanceDistance(q.s, track);
@@ -306,6 +343,11 @@ export class Racer {
       if (ds < -4 || ds > 230) continue;
       if (Math.abs(ob.lat) > e + ob.r) continue;
       obsIn.push({ ob, ds, clear: ob.r + FRONT_R + 2.5 });
+    }
+    if (race && race.hazards) {
+      const dz = race.hazards.dangerAhead(s, Math.max(30, this.speed), this._dz || (this._dz = []));
+      for (const d of dz) obsIn.push({ ob: { lat: d.lat }, ds: d.ds, clear: d.clear });
+      dz.length = 0;
     }
     if (obsIn.length) {
       // on ne combine que les obstacles proches les uns des autres (les suivants seront traités ensuite)
@@ -407,7 +449,7 @@ export class Racer {
       const vn = Math.abs(ai.latVel);
       ai.lat = sgn * (lim + 0.6);
       if (ai.latVel * sgn > 0) ai.latVel = -ai.latVel * 0.3;
-      if (vn > 4 && this.hitCooldown <= 0 && (here.wallH > 5 || track.railed)) {
+      if (vn > 4 && this.hitCooldown <= 0 && track.hard[here.index]) {
         race.onImpact(this, vn * 0.6, sgn, 'wall', ai.lat);
         this.speed *= 0.92;
         this.hitCooldown = 0.4;
@@ -435,8 +477,20 @@ export class Racer {
       }
     }
     const p = track.sample(this.distance, ai.lat, here);
+    let yRoad = p.y;
     this.groundY = p.y;
-    this.pos.set(p.x, p.y + HOVER + Math.sin(race.time * 2.3 + this.name.length) * 0.08, p.z);
+    if (track.gap[p.index]) {
+      // au-dessus du trou d'un saut : trajectoire parabolique de la lèvre à la réception
+      const J = track.jumps[track.jumpOf[p.index]];
+      if (J) {
+        let u = (track.wrapS(this.distance) - J.lip * track.step) / (J.gapN * track.step);
+        if (u < 0) u += track.length / (J.gapN * track.step);
+        u = clamp(u, 0, 1);
+        yRoad = lerp(track.py[J.lip], track.py[J.land], u) + 18 * u * (1 - u);
+      }
+      this.groundY = track.underY(p.index);
+    }
+    this.pos.set(p.x, yRoad + HOVER + Math.sin(race.time * 2.3 + this.name.length) * 0.08, p.z);
     const heading = Math.atan2(-p.tx, -p.tz);
     const slip = Math.atan2(ai.latVel, Math.max(10, this.speed));
     this.yaw = heading - slip;

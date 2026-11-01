@@ -52,6 +52,25 @@ export function drawTrackPreview(canvas, pv) {
     if (p.canyon) { if (!on) { ctx.moveTo(X(p), Y(p)); on = true; } else ctx.lineTo(X(p), Y(p)); } else on = false;
   });
   ctx.stroke();
+  // sections : tunnels (pointillés sombres), ponts (bleu), sauts (blanc), flammes (orange)
+  const seg = (key, color, width, dash) => {
+    ctx.save();
+    ctx.strokeStyle = color;
+    ctx.lineWidth = width;
+    ctx.setLineDash(dash || []);
+    ctx.beginPath();
+    let o = false;
+    pv.line.forEach((p) => {
+      if (p[key]) { if (!o) { ctx.moveTo(X(p), Y(p)); o = true; } else ctx.lineTo(X(p), Y(p)); } else o = false;
+    });
+    ctx.stroke();
+    ctx.restore();
+  };
+  const lw = Math.max(2, W / 50);
+  seg('tunnel', '#1a1410', lw * 1.3, [lw * 1.2, lw * 0.8]);
+  seg('bridge', '#3aa8ff', lw);
+  seg('flames', '#ff7a2a', lw * 1.2);
+  seg('jump', '#ffffff', lw * 1.4, [lw * 0.6, lw * 0.6]);
   const s0 = pv.line[0];
   ctx.fillStyle = '#fff';
   ctx.strokeStyle = '#000';
@@ -65,10 +84,18 @@ function trackTags(pv) {
   let canyons = 0;
   const n = def.points.length;
   for (let i = 0; i < n; i++) if (def.points[i][4] > 0 && def.points[(i - 1 + n) % n][4] === 0) canyons++;
+  const styleLabel = { rapide: 'Rapide', technique: 'Technique', mixte: 'Mixte' }[def.style];
+  if (styleLabel) tags.unshift(styleLabel);
   if (canyons) tags.push(`${canyons} canyon${canyons > 1 ? 's' : ''}`);
+  const count = (type) => (def.sections || []).filter((x) => x.type === type).length;
+  const nt = count('tunnel'), nb = count('bridge'), nj = count('jump'), nf = count('flames');
+  if (nt) tags.push(`${nt} tunnel${nt > 1 ? 's' : ''}`);
+  if (nb) tags.push(`${nb} pont${nb > 1 ? 's' : ''}`);
+  if (nj) tags.push(`${nj} saut${nj > 1 ? 's' : ''}`);
+  if (nf) tags.push('Flammes');
+  if (canyons) tags.push('Tireurs');
   if (th.elevated) tags.push('Piste suspendue');
-  if (th.water) tags.push(th.water.lava ? 'Lave' : 'Eau');
-  if (th.clouds) tags.push('Nuages');
+  if (th.water && th.water.lava) tags.push('Lave');
   const w = !th.weather ? [] : Array.isArray(th.weather) ? th.weather : [th.weather];
   for (const k of w) if (WEATHER_LABELS[k]) tags.push(WEATHER_LABELS[k]);
   if (th.traffic) tags.push('Trafic');
