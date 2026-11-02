@@ -1,7 +1,7 @@
 // Outils communs aux circuits : thème par défaut, fusion de thèmes, générateur de tracés.
 import { mulberry32, lerp, smoothstep } from '../util.js';
 
-// Thème par défaut (désert de Sablor). Chaque circuit ne redéfinit que ce qui change.
+// Thème par défaut (désert de Oumzara). Chaque circuit ne redéfinit que ce qui change.
 export const DEFAULT_THEME = {
   // ciel et lumière
   skyTop: 0x3f86d8,

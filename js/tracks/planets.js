@@ -1,10 +1,10 @@
 // 15 circuits sur d'autres planètes et environnements emblématiques.
-// Le tracé est généré à partir de `layout` (voir common.js) ; le thème ne précise que ce qui diffère de Sablor.
+// Le tracé est généré à partir de `layout` (voir common.js) ; le thème ne précise que ce qui diffère de Oumzara.
 
 export const PLANETS = [
-  // ----------------------------------------------------------------- GLACIA
+  // ----------------------------------------------------------------- KALDRUN
   {
-    id: 'glacia', name: 'Échine de Glace', planet: 'Glacia',
+    id: 'kaldrun', name: 'Échine de Glace', planet: 'Kaldrun',
     desc: 'Grotte de glace souterraine, deux crevasses à sauter et une courte gorge gardée par des tireurs.',
     style: 'mixte',
     layout: { seed: 11, n: 24, R: 1100, aspect: 1.3, rot: 0.3, harm: [[2, 0.16, 0.5], [3, 0.1, 1.7]], wobble: 0.18, elev: 10, canyons: [[15, 17]], wOpen: 44, wCanyon: 24, hCanyon: 44, features: ['stone', 'stone'], boulders: 2 },
@@ -40,9 +40,9 @@ export const PLANETS = [
     },
   },
 
-  // ----------------------------------------------------------------- SYLVARA
+  // ----------------------------------------------------------------- TIRNAVEL
   {
-    id: 'sylvara', name: 'Sentiers des Séquoias', planet: 'Sylvara',
+    id: 'tirnavel', name: 'Sentiers des Séquoias', planet: 'Tirnavel',
     desc: 'Tracé technique et étroit entre les séquoias : passerelle sur un ravin, tronc creux et sauts sur des troncs couchés.',
     style: 'technique',
     layout: { seed: 23, n: 36, R: 950, aspect: 1.1, rot: 1.1, harm: [[3, 0.15, 0.3], [6, 0.1, 2.0], [9, 0.045, 1.0]], wobble: 0.16, elev: 18, canyons: [], wOpen: 31, wCanyon: 24, hCanyon: 40, features: ['stone', 'split', 'stone'], boulders: 3 },
@@ -83,9 +83,9 @@ export const PLANETS = [
     },
   },
 
-  // ----------------------------------------------------------------- PYRAX
+  // ----------------------------------------------------------------- OROKHAL
   {
-    id: 'pyrax', name: 'Rivières de Lave', planet: 'Pyrax',
+    id: 'orokhal', name: 'Rivières de Lave', planet: 'Orokhal',
     desc: 'Fleuves de lave à franchir sur des ponts ou d\'un bond, tube de lave souterrain et jets de flammes à esquiver.',
     style: 'mixte',
     layout: { seed: 37, n: 26, R: 1000, aspect: 1.35, rot: -0.4, harm: [[2, 0.2, 1.0], [4, 0.07, 0.4]], wobble: 0.18, elev: 14, canyons: [[16, 18]], wOpen: 40, wCanyon: 22, hCanyon: 52, features: ['stone'], boulders: 0 },
@@ -127,9 +127,9 @@ export const PLANETS = [
     },
   },
 
-  // ----------------------------------------------------------------- VERDALIS
+  // ----------------------------------------------------------------- AYURELLE
   {
-    id: 'verdalis', name: 'Prairies des Lacs', planet: 'Verdalis',
+    id: 'ayurelle', name: 'Prairies des Lacs', planet: 'Ayurelle',
     desc: 'Le plus rapide des tracés verdoyants : longues courbes, deux ponts sur les lacs et un tunnel sous l\'eau.',
     style: 'rapide',
     layout: { seed: 41, n: 16, R: 1250, aspect: 1.25, rot: 0.8, harm: [[2, 0.1, 0.2], [3, 0.05, 2.4]], wobble: 0.12, elev: 24, canyons: [], wOpen: 52, wCanyon: 28, hCanyon: 38, features: ['clay', 'stone'], boulders: 0 },
@@ -167,9 +167,9 @@ export const PLANETS = [
     },
   },
 
-  // ----------------------------------------------------------------- URBION
+  // ----------------------------------------------------------------- NEXAHL
   {
-    id: 'urbion', name: 'Couloirs Aériens', planet: 'Urbion',
+    id: 'nexahl', name: 'Couloirs Aériens', planet: 'Nexahl',
     desc: 'Circuit urbain technique : lignes droites et virages à angle droit, tunnels à travers les tours, toits gardés.',
     style: 'technique',
     layout: {
@@ -212,9 +212,9 @@ export const PLANETS = [
     },
   },
 
-  // ----------------------------------------------------------------- THALASSA
+  // ----------------------------------------------------------------- MARLOWAI
   {
-    id: 'thalassa', name: 'Océan des Tempêtes', planet: 'Thalassa',
+    id: 'marlowai', name: 'Océan des Tempêtes', planet: 'Marlowai',
     desc: 'Lignes droites interminables au-dessus de l\'océan, sauts entre les plateformes et passage dans la cité.',
     style: 'rapide',
     layout: { seed: 61, n: 18, R: 1000, aspect: 1.55, rot: 0.5, harm: [[2, 0.08, 0.3]], wobble: 0.12, elev: 6, baseY: 32, canyons: [], wOpen: 44, wCanyon: 26, hCanyon: 40, features: ['clay'], boulders: 0 },
@@ -250,9 +250,9 @@ export const PLANETS = [
     },
   },
 
-  // ----------------------------------------------------------------- BRUMEL
+  // ----------------------------------------------------------------- MOORVASH
   {
-    id: 'brumel', name: 'Marais Brumeux', planet: 'Brumel',
+    id: 'moorvash', name: 'Marais Brumeux', planet: 'Moorvash',
     desc: 'Le plus technique : enchaînement de virages serrés dans la brume, ponts bas sur le marais et racine-tremplin.',
     style: 'technique',
     layout: { seed: 71, n: 38, R: 880, aspect: 1.15, rot: 2.0, harm: [[3, 0.14, 1.2], [7, 0.07, 0.3], [11, 0.03, 2.0]], wobble: 0.14, elev: 3, canyons: [], wOpen: 30, wCanyon: 22, hCanyon: 32, features: ['split', 'stone', 'split'], boulders: 3 },
@@ -290,9 +290,9 @@ export const PLANETS = [
     },
   },
 
-  // ----------------------------------------------------------------- RUBIRA
+  // ----------------------------------------------------------------- KARROKHESH
   {
-    id: 'rubira', name: 'Flèches Rouges', planet: 'Rubira',
+    id: 'karrokhesh', name: 'Flèches Rouges', planet: 'Karrokhesh',
     desc: 'La planète des canyons : trois gorges infestées de pillards, deux sauts au-dessus des gouffres et une fonderie en feu.',
     style: 'technique',
     layout: { seed: 83, n: 26, R: 1100, aspect: 1.3, rot: 1.4, harm: [[3, 0.22, 0.0], [6, 0.05, 1.0]], wobble: 0.2, elev: 18, canyons: [[3, 6], [10, 13], [18, 21]], wOpen: 40, wCanyon: 22, hCanyon: 55, features: ['stone'], boulders: 2 },
@@ -325,9 +325,9 @@ export const PLANETS = [
     },
   },
 
-  // ----------------------------------------------------------------- NIMBOS
+  // ----------------------------------------------------------------- ELORUN
   {
-    id: 'nimbos', name: 'Mer de Nuages', planet: 'Nimbos',
+    id: 'elorun', name: 'Mer de Nuages', planet: 'Elorun',
     desc: 'Très rapide : trois sauts entre les plateformes flottantes au-dessus des nuages et deux traversées de la cité.',
     style: 'rapide',
     layout: { seed: 97, n: 18, R: 1150, aspect: 1.3, rot: 0.2, harm: [[2, 0.15, 2.2]], wobble: 0.12, elev: 26, baseY: 0, canyons: [], wOpen: 44, wCanyon: 26, hCanyon: 45, features: ['clay'], boulders: 0 },
@@ -367,9 +367,9 @@ export const PLANETS = [
     },
   },
 
-  // ----------------------------------------------------------------- ARBOREA
+  // ----------------------------------------------------------------- HUKKAROTH
   {
-    id: 'arborea', name: 'Forêt des Géants', planet: 'Arborea',
+    id: 'hukkaroth', name: 'Forêt des Géants', planet: 'Hukkaroth',
     desc: 'Sentiers sinueux entre les arbres géants, passerelles de bois au-dessus des lagons et un tronc creux à traverser.',
     style: 'technique',
     layout: { seed: 103, n: 32, R: 1050, aspect: 1.1, rot: 0.6, harm: [[2, 0.14, 1.4], [5, 0.08, 0.0], [8, 0.03, 1.2]], wobble: 0.18, elev: 20, canyons: [], wOpen: 34, wCanyon: 26, hCanyon: 42, features: ['stone', 'stone'], boulders: 2 },
@@ -409,9 +409,9 @@ export const PLANETS = [
     },
   },
 
-  // ----------------------------------------------------------------- ROUILLON
+  // ----------------------------------------------------------------- RUXHAL
   {
-    id: 'rouillon', name: 'Cimetière de Vaisseaux', planet: 'Rouillon',
+    id: 'ruxhal', name: 'Cimetière de Vaisseaux', planet: 'Ruxhal',
     desc: 'Grandes lignes droites dans le désert : traversées de coques d\'épaves, épaves en feu et saut par-dessus les débris.',
     style: 'rapide',
     layout: { seed: 113, n: 16, R: 1150, aspect: 1.6, rot: -0.8, harm: [[2, 0.12, 0.1], [3, 0.06, 1.9]], wobble: 0.12, elev: 10, canyons: [], wOpen: 50, wCanyon: 26, hCanyon: 38, features: ['clay', 'stone'], boulders: 2 },
@@ -447,9 +447,9 @@ export const PLANETS = [
     },
   },
 
-  // ----------------------------------------------------------------- SALINAS
+  // ----------------------------------------------------------------- HALKARIM
   {
-    id: 'salinas', name: 'Plaine de Sel', planet: 'Salinas',
+    id: 'halkarim', name: 'Plaine de Sel', planet: 'Halkarim',
     desc: 'Le circuit le plus rapide : piste très large sur la plaine de sel, crevasses à sauter et grotte de cristaux rouges.',
     style: 'rapide',
     layout: { seed: 127, n: 14, R: 1150, aspect: 1.75, rot: 0, harm: [[2, 0.08, 0.0]], wobble: 0.1, elev: 3, canyons: [], wOpen: 56, wCanyon: 24, hCanyon: 44, features: ['stone'], boulders: 0 },
@@ -483,9 +483,9 @@ export const PLANETS = [
     },
   },
 
-  // ----------------------------------------------------------------- LAGONIA
+  // ----------------------------------------------------------------- TAHURIKI
   {
-    id: 'lagonia', name: 'Lagons Tropicaux', planet: 'Lagonia',
+    id: 'tahuriki', name: 'Lagons Tropicaux', planet: 'Tahuriki',
     desc: 'D\'île en île : trois ponts au-dessus des lagons, deux sauts au-dessus de l\'eau et une falaise gardée par des sentinelles.',
     style: 'mixte',
     layout: { seed: 131, n: 28, R: 1100, aspect: 1.2, rot: 1.0, harm: [[3, 0.16, 1.0], [4, 0.06, 0.3]], wobble: 0.2, elev: 8, canyons: [[19, 21]], wOpen: 42, wCanyon: 26, hCanyon: 34, features: ['stone', 'stone'], boulders: 1 },
@@ -524,9 +524,9 @@ export const PLANETS = [
     },
   },
 
-  // ----------------------------------------------------------------- ZARUTA
+  // ----------------------------------------------------------------- IXMARU
   {
-    id: 'zaruta', name: 'Temples de la Jungle', planet: 'Zaruta',
+    id: 'ixmaru', name: 'Temples de la Jungle', planet: 'Ixmaru',
     desc: 'Jungle sinueuse : souterrain sous un temple éclairé aux torches, pont sur la rivière, sauts et ruines gardées.',
     style: 'technique',
     layout: { seed: 137, n: 32, R: 1000, aspect: 1.15, rot: -1.2, harm: [[2, 0.12, 0.6], [5, 0.09, 1.0], [8, 0.03, 0.4]], wobble: 0.2, elev: 20, canyons: [[24, 26]], wOpen: 34, wCanyon: 24, hCanyon: 40, features: ['stone', 'split'], boulders: 2 },
@@ -568,9 +568,9 @@ export const PLANETS = [
     },
   },
 
-  // ----------------------------------------------------------------- MYCELI
+  // ----------------------------------------------------------------- HYPHAEL
   {
-    id: 'myceli', name: 'Jardins Fongiques', planet: 'Myceli',
+    id: 'hyphael', name: 'Jardins Fongiques', planet: 'Hyphael',
     desc: 'Virages enchaînés entre les champignons géants, geysers et jets de spores toxiques, tunnel organique lumineux.',
     style: 'technique',
     layout: { seed: 149, n: 32, R: 980, aspect: 1.2, rot: 2.4, harm: [[3, 0.18, 2.0], [6, 0.07, 0.4], [9, 0.03, 1.4]], wobble: 0.18, elev: 16, canyons: [], wOpen: 34, wCanyon: 24, hCanyon: 42, features: ['stone', 'stone'], boulders: 2 },

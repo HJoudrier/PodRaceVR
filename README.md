@@ -14,22 +14,22 @@ HTML + CSS + JavaScript, sans étape de build.
 
 | Planète | Circuit | Style | Mécaniques |
 |---|---|---|---|
-| Sablor | Boucle des Dunes | mixte | le classique : canyons des pillards, arches de pierre et d'argile, rochers |
-| Glacia | Échine de Glace | mixte | grotte de glace souterraine, 2 sauts au-dessus des crevasses, courte gorge gardée |
-| Sylvara | Sentiers des Séquoias | technique | piste étroite entre les séquoias, passerelle sur un ravin, tronc creux, 2 sauts |
-| Pyrax | Rivières de Lave | mixte | 2 ponts sur la lave, saut au-dessus d'un fleuve de lave, tube de lave, jets de flammes et geysers |
-| Verdalis | Prairies des Lacs | rapide | 2 longs ponts sur les lacs, tunnel sous l'eau |
-| Urbion | Couloirs Aériens | technique | circuit urbain à angles droits, 3 tunnels à travers les tours, toits gardés, trafic |
-| Thalassa | Océan des Tempêtes | rapide | lignes droites sur pilotis, 2 sauts entre plateformes au-dessus de l'océan, passage dans la cité |
-| Brumel | Marais Brumeux | technique | le plus sinueux : brume dense, 3 ponts bas sur le marais, racine-tremplin |
-| Rubira | Flèches Rouges | technique | 3 canyons infestés de pillards, 2 sauts au-dessus des gouffres, fonderie en feu |
-| Nimbos | Mer de Nuages | rapide | 3 sauts entre plateformes flottantes au-dessus des nuages, 2 traversées de la cité |
-| Arborea | Forêt des Géants | technique | passerelles de bois arquées au-dessus des lagons, tronc creux, saut |
-| Rouillon | Cimetière de Vaisseaux | rapide | 2 traversées de coques d'épaves, épaves en feu, saut |
-| Salinas | Plaine de Sel | rapide | le plus rapide : piste très large, 2 sauts au-dessus des crevasses, grotte de cristaux rouges |
-| Lagonia | Lagons Tropicaux | mixte | d'île en île : 3 ponts au-dessus des lagons, 2 sauts au-dessus de l'eau, falaise gardée |
-| Zaruta | Temples de la Jungle | technique | souterrain sous un temple éclairé aux torches, pont sur la rivière, 2 sauts, ruines gardées |
-| Myceli | Jardins Fongiques | technique | geysers et jets de spores toxiques, tunnel organique lumineux, 2 sauts |
+| Oumzara | Boucle des Dunes | mixte | le classique : canyons des pillards, arches de pierre et d'argile, rochers |
+| Kaldrun | Échine de Glace | mixte | grotte de glace souterraine, 2 sauts au-dessus des crevasses, courte gorge gardée |
+| Tirnavel | Sentiers des Séquoias | technique | piste étroite entre les séquoias, passerelle sur un ravin, tronc creux, 2 sauts |
+| Orokhal | Rivières de Lave | mixte | 2 ponts sur la lave, saut au-dessus d'un fleuve de lave, tube de lave, jets de flammes et geysers |
+| Ayurelle | Prairies des Lacs | rapide | 2 longs ponts sur les lacs, tunnel sous l'eau |
+| Nexahl | Couloirs Aériens | technique | circuit urbain à angles droits, 3 tunnels à travers les tours, toits gardés, trafic |
+| Marlowai | Océan des Tempêtes | rapide | lignes droites sur pilotis, 2 sauts entre plateformes au-dessus de l'océan, passage dans la cité |
+| Moorvash | Marais Brumeux | technique | le plus sinueux : brume dense, 3 ponts bas sur le marais, racine-tremplin |
+| Karrokhesh | Flèches Rouges | technique | 3 canyons infestés de pillards, 2 sauts au-dessus des gouffres, fonderie en feu |
+| Elorun | Mer de Nuages | rapide | 3 sauts entre plateformes flottantes au-dessus des nuages, 2 traversées de la cité |
+| Hukkaroth | Forêt des Géants | technique | passerelles de bois arquées au-dessus des lagons, tronc creux, saut |
+| Ruxhal | Cimetière de Vaisseaux | rapide | 2 traversées de coques d'épaves, épaves en feu, saut |
+| Halkarim | Plaine de Sel | rapide | le plus rapide : piste très large, 2 sauts au-dessus des crevasses, grotte de cristaux rouges |
+| Tahuriki | Lagons Tropicaux | mixte | d'île en île : 3 ponts au-dessus des lagons, 2 sauts au-dessus de l'eau, falaise gardée |
+| Ixmaru | Temples de la Jungle | technique | souterrain sous un temple éclairé aux torches, pont sur la rivière, 2 sauts, ruines gardées |
+| Hyphael | Jardins Fongiques | technique | geysers et jets de spores toxiques, tunnel organique lumineux, 2 sauts |
 
 - **Mécaniques de parcours** :
   - **Tunnels et souterrains** : grottes de glace, tubes de lave, tunnel sous un lac, coques d'épaves, troncs creux,
@@ -39,8 +39,8 @@ HTML + CSS + JavaScript, sans étape de build.
   - **Ponts** au-dessus de l'eau, des marais, de la lave ou des ravins, avec barrières.
   - **Jets de flammes** (feu, spores toxiques) : latéraux ou en geysers, avec une alerte lumineuse avant chaque
     salve. Ils brûlent le glisseur et peuvent enflammer un moteur.
-  - **Canyons avec tireurs embusqués** : seulement sur 7 circuits (Sablor, Glacia, Pyrax, Urbion, Rubira,
-    Lagonia, Zaruta).
+  - **Canyons avec tireurs embusqués** : seulement sur 7 circuits (Oumzara, Kaldrun, Orokhal, Nexahl, Karrokhesh,
+    Tahuriki, Ixmaru).
 - Les tracés générés sont validés automatiquement : pas de chevauchement, départ dégagé, virages praticables,
   sauts placés sur des portions assez droites.
 - **Sensation de vitesse** : glisseurs à 550–850 km/h au ras du sol, lignes de vitesse, poussière, balises et mâts qui défilent,
@@ -139,7 +139,7 @@ index.html            interface (hangar, HUD, pause, résultats)
 css/style.css         style cartoon de l'interface
 lib/                  three.js r170 (MIT) embarqué, fonctionne hors ligne
 js/main.js            rendu, boucle de jeu, caméras, menus, session WebXR
-js/tracks/sablor.js circuit de Sablor (points de contrôle dessinés à la main)
+js/tracks/oumzara.js circuit de Oumzara (points de contrôle dessinés à la main)
 js/tracks/planets.js  les 15 autres planètes (paramètres du tracé + thème)
 js/tracks/common.js   thème par défaut, fusion des thèmes, générateur de tracés, arches et rochers automatiques
 js/tracks/index.js    catalogue des circuits et aperçus pour le menu
@@ -171,7 +171,7 @@ de forme, relief, indices des canyons, largeurs — ou des `corners` pour un tra
 et un `theme` qui ne redéfinit que ce qui change par rapport au
 thème par défaut (`js/tracks/common.js`) : ciel, soleils, planète dans le ciel, sol, eau ou lave, piste suspendue,
 barrières, strates des falaises, façades, décors, météo, trafic, couleurs des tireurs. On peut aussi donner
-directement des `points` dessinés à la main, comme pour Sablor.
+directement des `points` dessinés à la main, comme pour Oumzara.
 
 Performances visées pour le Quest 3 : moins de 150 appels de rendu par œil et 180 000 à 450 000 triangles selon le
 circuit (densité du décor réduite en qualité Moyenne/Basse), pas d'ombres dynamiques ni de post-traitement

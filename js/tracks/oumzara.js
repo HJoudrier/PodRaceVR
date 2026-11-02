@@ -1,10 +1,10 @@
-// Circuit n°1 : désert de Sablor.
+// Circuit n°1 : désert de Oumzara.
 // Chaque point de contrôle : [x, y, z, largeur de piste, hauteur des falaises (0 = désert ouvert)].
 // Les arches et rochers sont positionnés par "at" = indice (fractionnaire) le long des points de contrôle.
-export const SABLOR = {
-  id: 'sablor',
+export const OUMZARA = {
+  id: 'oumzara',
   name: 'Boucle des Dunes',
-  planet: 'Sablor',
+  planet: 'Oumzara',
   style: 'mixte',
   sections: [],
   desc: 'Le grand classique : dunes brûlantes, canyons des pillards et arches d\'argile sous un soleil de plomb.',
@@ -60,6 +60,6 @@ export const SABLOR = {
     { at: 22.75, lat: -10, r: 3.2 },
     { at: 23.45, lat: 9, r: 3.4 },
   ],
-  // Le thème par défaut (common.js) est celui de Sablor : seuls les dômes sont propres à ce circuit.
+  // Le thème par défaut (common.js) est celui de Oumzara : seuls les dômes sont propres à ce circuit.
   theme: { domes: true },
 };

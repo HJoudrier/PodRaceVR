@@ -85,7 +85,7 @@ async function init() {
   effects = new Effects(scene);
   audio = new AudioSys();
   audio.setVolume(settings.volume);
-  if (!TRACKS.find((t) => t.id === settings.trackId)) settings.trackId = 'sablor';
+  if (!TRACKS.find((t) => t.id === settings.trackId)) settings.trackId = 'oumzara';
   buildWorld(settings.trackId);
   input = new Input();
   input.vrControl = settings.vrControl;
