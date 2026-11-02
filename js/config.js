@@ -1,4 +1,4 @@
-// Données du jeu : podracers, pilotes, conversion des caractéristiques en physique, réglages.
+// Données du jeu : glisseurs, pilotes, conversion des caractéristiques en physique, réglages.
 import { lerp, clamp } from './util.js';
 
 export const STAT_KEYS = ['accel', 'topSpeed', 'handling', 'braking', 'armor'];
@@ -14,11 +14,11 @@ export const TUNING_POINTS = 3; // points de réglage libres (on peut en gagner 
 export const TUNING_MIN = -3;
 export const TUNING_MAX = 3;
 
-// 8 podracers originaux, chacun avec un style et un profil différent.
+// 8 glisseurs originaux, chacun avec un style et un profil différent.
 export const PODS = [
   {
     id: 'comete', name: 'Comète Rouge',
-    desc: 'Le pod polyvalent par excellence. Aucun point faible, aucun excès.',
+    desc: 'Le glisseur polyvalent par excellence. Aucun point faible, aucun excès.',
     base: { accel: 6, topSpeed: 6, handling: 6, braking: 5, armor: 5 },
     look: { c1: 0xc8322a, c2: 0xf2ece0, c3: 0x3a3a44, engine: 'round', len: 5.6, rad: 0.82, spacing: 3.8, intake: 'ring', fins: 2, cockpit: 'capsule', binder: 0x6fd0ff, flame: 0xff9a3a },
   },
@@ -29,7 +29,7 @@ export const PODS = [
     look: { c1: 0x3f6b3a, c2: 0xc19a4b, c3: 0x2b2b2b, engine: 'box', len: 5.2, rad: 0.95, spacing: 4.0, intake: 'split', fins: 4, cockpit: 'tub', binder: 0x9bff7a, flame: 0xffb347 },
   },
   {
-    id: 'fennec', name: 'Fennec',
+    id: 'renard', name: 'Renard',
     desc: 'Léger et nerveux : des départs foudroyants, mais une carrosserie fragile.',
     base: { accel: 8, topSpeed: 5, handling: 7, braking: 5, armor: 3 },
     look: { c1: 0xe8812c, c2: 0xf6e3bf, c3: 0x5b3b25, engine: 'tapered', len: 4.6, rad: 0.7, spacing: 3.4, intake: 'ring', fins: 1, cockpit: 'wedge', binder: 0xffe36f, flame: 0xff7b2a },
@@ -41,7 +41,7 @@ export const PODS = [
     look: { c1: 0x2f63b8, c2: 0xd9dde4, c3: 0x1d2633, engine: 'round', len: 7.0, rad: 0.68, spacing: 3.6, intake: 'scoop', fins: 3, cockpit: 'wedge', binder: 0x7fb4ff, flame: 0x7fc8ff },
   },
   {
-    id: 'krayt', name: 'Krayt',
+    id: 'leviathan', name: 'Léviathan',
     desc: 'Monstrueux moteurs jumelés. Très rapide, mais lourd à placer en virage.',
     base: { accel: 6, topSpeed: 8, handling: 3, braking: 5, armor: 6 },
     look: { c1: 0xd8cdb2, c2: 0x7a6a55, c3: 0x302822, engine: 'twin', len: 6.2, rad: 0.62, spacing: 4.2, intake: 'ring', fins: 2, cockpit: 'tub', binder: 0xff6fd8, flame: 0xffa040 },
@@ -53,7 +53,7 @@ export const PODS = [
     look: { c1: 0x6b3fa0, c2: 0xf0c75a, c3: 0x2a1f3a, engine: 'tapered', len: 5.0, rad: 0.75, spacing: 3.6, intake: 'split', fins: 2, cockpit: 'capsule', binder: 0xd38bff, flame: 0xff8ad8 },
   },
   {
-    id: 'bantha', name: 'Bantha Express',
+    id: 'mammouth', name: 'Mammouth Express',
     desc: 'Robuste et prévisible, avec d\'excellents aérofreins.',
     base: { accel: 4, topSpeed: 6, handling: 4, braking: 7, armor: 7 },
     look: { c1: 0x7a4a2a, c2: 0xe6c34a, c3: 0x3a2a1c, engine: 'box', len: 5.8, rad: 1.0, spacing: 4.2, intake: 'ring', fins: 2, cockpit: 'tub', binder: 0xffd36f, flame: 0xffb050 },
@@ -118,7 +118,7 @@ export const RAIDERS = {
 
 export const DEFAULT_SETTINGS = {
   podId: 'comete',
-  trackId: 'tatooine',
+  trackId: 'sablor',
   tuning: { accel: 0, topSpeed: 0, handling: 0, braking: 0, armor: 0 },
   laps: 3,
   opponents: 5,
@@ -137,7 +137,7 @@ export const DEFAULT_SETTINGS = {
   motionBlur: 'normal',   // flou de vitesse à l'écran : off | leger | normal | fort
 };
 
-const STORAGE_KEY = 'podracevr-settings-v1';
+const STORAGE_KEY = 'hoverrush-settings-v1';
 export function loadSettings() {
   let s = null;
   try {

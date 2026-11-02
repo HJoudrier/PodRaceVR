@@ -1,10 +1,10 @@
 // Catalogue des circuits.
 import * as THREE from 'three';
-import { TATOOINE } from './tatooine.js';
+import { SABLOR } from './sablor.js';
 import { PLANETS } from './planets.js';
 import { resolveTrack, sectionSpan } from './common.js';
 
-export const TRACKS = [TATOOINE, ...PLANETS];
+export const TRACKS = [SABLOR, ...PLANETS];
 
 export function getTrackDef(id) {
   const def = TRACKS.find((t) => t.id === id) || TRACKS[0];

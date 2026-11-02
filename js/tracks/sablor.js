@@ -1,13 +1,13 @@
-// Circuit n°1 : désert de Tatooine.
+// Circuit n°1 : désert de Sablor.
 // Chaque point de contrôle : [x, y, z, largeur de piste, hauteur des falaises (0 = désert ouvert)].
 // Les arches et rochers sont positionnés par "at" = indice (fractionnaire) le long des points de contrôle.
-export const TATOOINE = {
-  id: 'tatooine',
+export const SABLOR = {
+  id: 'sablor',
   name: 'Boucle des Dunes',
-  planet: 'Tatooine',
+  planet: 'Sablor',
   style: 'mixte',
   sections: [],
-  desc: 'Le grand classique : dunes brûlantes, canyons des pillards et arches d\'argile sous deux soleils.',
+  desc: 'Le grand classique : dunes brûlantes, canyons des pillards et arches d\'argile sous un soleil de plomb.',
   points: [
     [0, 0, 0, 46, 0],          // 0  ligne de départ / arrivée
     [0, 0, 400, 46, 0],        // 1
@@ -26,7 +26,7 @@ export const TATOOINE = {
     [2050, 4, 200, 40, 0],     // 14
     [1950, 6, -50, 38, 0],     // 15
     [1750, 4, -150, 32, 0],    // 16 entrée du défilé
-    [1550, 0, -100, 26, 40],   // 17 Défilé du Krayt
+    [1550, 0, -100, 26, 40],   // 17 Défilé du Léviathan
     [1350, -4, -200, 22, 50],  // 18
     [1200, -6, -350, 20, 56],  // 19
     [1000, -6, -350, 22, 50],  // 20
@@ -60,6 +60,6 @@ export const TATOOINE = {
     { at: 22.75, lat: -10, r: 3.2 },
     { at: 23.45, lat: 9, r: 3.4 },
   ],
-  // Le thème par défaut (common.js) est celui de Tatooine : seuls les dômes sont propres à ce circuit.
+  // Le thème par défaut (common.js) est celui de Sablor : seuls les dômes sont propres à ce circuit.
   theme: { domes: true },
 };

@@ -1,7 +1,7 @@
 // Outils communs aux circuits : thème par défaut, fusion de thèmes, générateur de tracés.
 import { mulberry32, lerp, smoothstep } from '../util.js';
 
-// Thème par défaut (désert de Tatooine). Chaque circuit ne redéfinit que ce qui change.
+// Thème par défaut (désert de Sablor). Chaque circuit ne redéfinit que ce qui change.
 export const DEFAULT_THEME = {
   // ciel et lumière
   skyTop: 0x3f86d8,
@@ -9,10 +9,7 @@ export const DEFAULT_THEME = {
   fog: 0xeccb98,
   fogNear: 260,
   fogFar: 3100,
-  suns: [
-    { dir: [0.45, 0.62, -0.42], color: 0xfffaea, glow: 0xffcc8c, size: 1 },
-    { dir: [0.62, 0.38, -0.55], color: 0xffe09e, glow: 0xffa666, size: 0.8 },
-  ],
+  suns: [{ dir: [0.45, 0.62, -0.42], color: 0xfffaea, glow: 0xffcc8c, size: 1.15 }],
   sunDir: [0.45, 0.62, -0.42], // direction de la lumière principale
   sunColor: 0xfff1d8,
   sunIntensity: 2.3,

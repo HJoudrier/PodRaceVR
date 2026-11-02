@@ -1,4 +1,4 @@
-// Pillards embusqués sur les crêtes des canyons, qui tirent des traits de blaster sur les pods.
+// Pillards embusqués sur les crêtes des canyons, qui tirent des traits laser sur les glisseurs.
 import * as THREE from 'three';
 import { toon, outlineMaterial, smoothNormalsClone, mergeColored, paint } from './toon.js';
 import { clamp, mulberry32 } from './util.js';
@@ -91,7 +91,7 @@ export class Raiders {
     this._up = new THREE.Vector3(0, 1, 0);
     this.list.forEach((r, k) => this.updateMatrix(r, k));
 
-    // traits de blaster
+    // traits laser
     const bGeo = new THREE.CylinderGeometry(0.17, 0.17, 5, 6);
     bGeo.rotateX(Math.PI / 2);
     const gGeo = new THREE.CylinderGeometry(0.5, 0.5, 6, 6);
@@ -165,7 +165,7 @@ export class Raiders {
     b.floor = target.groundY - 0.2;
     b.near = false;
     this.effects.flash(r.muzzle, 0xff5a30, 5);
-    this.audio.blaster(r.muzzle);
+    this.audio.laser(r.muzzle);
   }
 
   update(dt, race) {
@@ -209,7 +209,7 @@ export class Raiders {
           if (dx0 * dx0 + dz0 * dz0 > 400) continue;
           for (const c of o.collisionCircles()) {
             if (segSphere(b.prev, b.pos, c.x, o.pos.y, c.z, c.r + 0.35)) {
-              race.onBlasterHit(o, b.pos.clone(), b.vel);
+              race.onLaserHit(o, b.pos.clone(), b.vel);
               dead = true;
               break;
             }

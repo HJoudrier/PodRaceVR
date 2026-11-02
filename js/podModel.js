@@ -1,4 +1,4 @@
-// Modèles procéduraux de podracers : deux réacteurs reliés par un arc d'énergie, câbles, cockpit ouvert.
+// Modèles procéduraux de glisseurs : deux réacteurs reliés par un arc d'énergie, câbles, cockpit ouvert.
 import * as THREE from 'three';
 import { toon, outlineMaterial, smoothNormalsClone, mergeColored, paint, radialTexture } from './toon.js';
 

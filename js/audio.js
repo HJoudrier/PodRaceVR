@@ -1,4 +1,4 @@
-// Sons synthétisés en temps réel (WebAudio) : moteurs, vent, blasters, chocs, alarmes, réparation.
+// Sons synthétisés en temps réel (WebAudio) : moteurs, vent, tirs, chocs, alarmes, réparation.
 import { clamp } from './util.js';
 
 export class AudioSys {
@@ -252,7 +252,7 @@ export class AudioSys {
     return pn;
   }
 
-  blaster(pos) {
+  laser(pos) {
     if (!this.ctx) return;
     const ctx = this.ctx, t = ctx.currentTime;
     const o = ctx.createOscillator(); o.type = 'square';
@@ -299,7 +299,7 @@ export class AudioSys {
     const g = ctx.createGain(); this.env(g, t, 0.005, clamp(0.4 + strong, 0.4, 1.2), 0.3);
     o.connect(g).connect(this.master); o.start(t); o.stop(t + 0.35);
   }
-  blasterHit() { if (this.ctx) { this.noiseBurst(0.35, 2500, 0.7, null, 'bandpass', 300); this.hit(0.3); } }
+  laserHit() { if (this.ctx) { this.noiseBurst(0.35, 2500, 0.7, null, 'bandpass', 300); this.hit(0.3); } }
   explosion(pos) { if (this.ctx) this.noiseBurst(1.6, 2500, 1.4, pos, 'lowpass', 60); }
   whoosh() { if (this.ctx) this.noiseBurst(0.7, 500, 0.55, null, 'bandpass', 2600); }
   flameBurst(pos) { if (this.ctx) this.noiseBurst(1.2, 180, 0.9, pos, 'lowpass', 1400); }

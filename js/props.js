@@ -357,24 +357,20 @@ export const PROP_TYPES = {
     return { parts: [{ geo: mergeColored(parts), mat: toon({ vertexColors: true }), palette: [0x9a9a8a, 0x8a8c7e, 0xa8a898] }], radius: 0.7 };
   },
 
-  wreckWedge(theme, P) {
-    const hull = new THREE.BoxGeometry(1, 0.16, 2, 2, 1, 2);
-    const p = hull.attributes.position;
-    for (let i = 0; i < p.count; i++) {
-      const z = p.getZ(i);
-      const t = (z + 1) / 2; // 0 = pointe avant, 1 = arrière
-      p.setX(i, p.getX(i) * (0.05 + 0.95 * t));
-      if (p.getY(i) > 0) p.setY(i, p.getY(i) * (0.4 + 0.6 * t));
-    }
-    hull.computeVertexNormals();
+  // Épave de cargo : coque arrondie, gouvernail brisé, nacelles latérales (silhouette volontairement générique)
+  wreckHull(theme, P) {
+    const hull = new THREE.CapsuleGeometry(0.26, 1.45, 3, 10);
+    hull.rotateX(Math.PI / 2);
+    hull.scale(1.25, 0.8, 1);
+    hull.translate(0, 0.1, 0);
     const parts = [paint(hull, 0xffffff)];
-    const tower = new THREE.BoxGeometry(0.28, 0.12, 0.26); tower.translate(0, 0.14, 0.62);
-    parts.push(paint(tower, 0xd8d8d8));
-    const bridge = new THREE.BoxGeometry(0.42, 0.04, 0.08); bridge.translate(0, 0.21, 0.66);
-    parts.push(paint(bridge, 0xc8c8c8));
-    for (const sx of [-0.25, 0, 0.25]) {
-      const e = new THREE.CylinderGeometry(0.07, 0.07, 0.1, 10); e.rotateX(Math.PI / 2); e.translate(sx, 0, 1.03);
-      parts.push(paint(e, 0x6a6a6a));
+    const cabin = new THREE.BoxGeometry(0.3, 0.14, 0.36); cabin.translate(0, 0.3, -0.45);
+    parts.push(paint(cabin, 0xd8d8d8));
+    const fin = new THREE.BoxGeometry(0.04, 0.34, 0.26); fin.rotateX(0.35); fin.translate(0, 0.4, 0.75);
+    parts.push(paint(fin, 0xc0c0c0));
+    for (const sx of [-0.4, 0.4]) {
+      const n = new THREE.CylinderGeometry(0.1, 0.12, 0.8, 8); n.rotateX(Math.PI / 2); n.translate(sx, 0.05, 0.5);
+      parts.push(paint(n, 0x6a6a6a));
     }
     return { parts: [{ geo: mergeColored(parts), mat: toon({ vertexColors: true }), palette: [0x9aa0a8, 0x8a9098, 0xa8aeb4] }], radius: 1.0, tilt: 0.45 };
   },

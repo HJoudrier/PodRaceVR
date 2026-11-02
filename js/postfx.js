@@ -1,7 +1,7 @@
 // Flou de mouvement radial (« zoom blur ») pour l'écran (ordinateur, téléphone).
 // - centré sur le point de fuite (direction du déplacement), net au centre, de plus en plus flou vers les bords ;
 // - intensité proportionnelle à la vitesse ;
-// - la profondeur sert de masque : le pod du joueur et le cockpit, qui se déplacent avec la caméra, restent nets,
+// - la profondeur sert de masque : le glisseur du joueur et le cockpit, qui se déplacent avec la caméra, restent nets,
 //   et leurs pixels ne « bavent » pas sur le décor.
 // Désactivé en VR (inconfort et coût d'une passe plein écran par œil).
 import * as THREE from 'three';
@@ -41,7 +41,7 @@ const FRAG = `
         if (i > uTaps) break;
         float t = (float(i) - jit) / float(uTaps);
         vec2 uv = vUv - dir * k * t;
-        // les échantillons qui tombent sur le pod (proche) ne comptent pas : pas de traînée du pod sur le décor
+        // les échantillons qui tombent sur le glisseur (proche) ne comptent pas : pas de traînée du glisseur sur le décor
         float w = smoothstep(uMaskNear - 6.0, uMaskNear + 4.0, viewDist(uv));
         acc += texture2D(tColor, uv) * w;
         wsum += w;

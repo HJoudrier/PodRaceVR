@@ -1,5 +1,5 @@
 // Jets de flammes : latéraux (balaient la moitié de la piste) ou geysers verticaux, en cycle
-// repos -> alerte (lueur, étincelles) -> flammes. Ils brûlent les pods qui passent dedans.
+// repos -> alerte (lueur, étincelles) -> flammes. Ils brûlent les glisseurs qui passent dedans.
 import * as THREE from 'three';
 import { toon, mergeColored, paint, outlineMaterial, smoothNormalsClone } from './toon.js';
 import { mulberry32 } from './util.js';
@@ -147,7 +147,7 @@ export class Hazards {
       if (st === 1 && Math.random() < 0.35) fx.flameJet(pos, dir, 4, j.style, 1, 0.5);
       if (st === 2) {
         fx.flameJet(pos, dir, j.len, j.style, Math.max(3, Math.round(10 * this.fxScale)), 1);
-        // pods touchés
+        // glisseurs touchés
         for (const r of race.racers) {
           if (r.destroyed || r.flameCd > 0) continue;
           for (const c of r.collisionCircles()) {

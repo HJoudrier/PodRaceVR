@@ -1,4 +1,4 @@
-// Hangar : sélection du podracer, atelier de réglage, options de course.
+// Hangar : sélection du glisseur, atelier de réglage, options de course.
 import { PODS, STAT_KEYS, STAT_LABELS, TUNING_MIN, TUNING_MAX, tuningPointsLeft, DIFFICULTY, BREAKDOWNS, RAIDERS } from './config.js';
 
 const $ = (id) => document.getElementById(id);

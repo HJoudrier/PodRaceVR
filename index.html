@@ -6,7 +6,7 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="theme-color" content="#2a170b">
-  <title>PodRace VR</title>
+  <title>HoverRush VR</title>
   <link rel="stylesheet" href="css/style.css">
   <script type="importmap">
     { "imports": { "three": "./lib/three.module.min.js", "three/addons/": "./lib/" } }
@@ -15,21 +15,21 @@
 <body>
   <div id="loading" class="screen">
     <div class="loading-box">
-      <h1>PODRACE <span>VR</span></h1>
-      <p id="loading-text">Génération du désert de Tatooine…</p>
+      <h1>HOVERRUSH <span>VR</span></h1>
+      <p id="loading-text">Génération du désert de Sablor…</p>
       <div class="loading-bar"><div></div></div>
     </div>
   </div>
 
-  <!-- Hangar : choix du pod, réglages, paramètres de course -->
+  <!-- Hangar : choix du glisseur, réglages, paramètres de course -->
   <div id="menu" class="screen hidden">
     <header class="menu-head">
-      <h1>PODRACE <span>VR</span></h1>
-      <p class="sub" id="menu-sub">Tatooine — Boucle des Dunes</p>
+      <h1>HOVERRUSH <span>VR</span></h1>
+      <p class="sub" id="menu-sub">Sablor — Boucle des Dunes</p>
     </header>
     <div class="cols">
       <section class="panel">
-        <h2>Podracer</h2>
+        <h2>Glisseur</h2>
         <div id="pod-list" class="pod-grid"></div>
         <p id="pod-desc" class="desc"></p>
       </section>
@@ -46,7 +46,7 @@
         <div class="track-current" id="track-current" role="button" tabindex="0" aria-label="Choisir le circuit">
           <canvas id="track-mini" width="240" height="160"></canvas>
           <div class="track-info">
-            <div class="track-planet" id="track-planet">Tatooine</div>
+            <div class="track-planet" id="track-planet">Sablor</div>
             <div class="track-name" id="track-name">Boucle des Dunes</div>
             <div class="track-meta" id="track-meta"></div>
           </div>
@@ -62,7 +62,7 @@
     <div id="quick-start"><button id="btn-start2" class="big">▶ LANCER LA COURSE</button></div>
     <footer class="menu-foot">
       <button id="btn-help" class="small">Commandes</button>
-      <span class="credit">Jeu de fan non officiel — rendu cartoon, sons synthétisés.</span>
+      <span class="credit">Jeu indépendant — rendu cartoon, sons synthétisés.</span>
     </footer>
   </div>
 
@@ -139,11 +139,11 @@
         <b>Jets de flammes</b> : ils s'allument après une lueur d'alerte ; passez du côté libre de la piste.
         <b>Tunnels</b> et <b>ponts</b> ont des parois infranchissables : restez au centre.</p>
       <h3>Avaries et réparations</h3>
-      <p>Chocs contre les parois, les arches ou les autres pods, et tirs des pillards embusqués sur les crêtes
-        endommagent vos <b>moteurs</b>, votre <b>direction</b> et votre <b>coque</b>. Un pod abîmé accélère moins,
+      <p>Chocs contre les parois, les arches ou les autres glisseurs, et tirs des pillards embusqués sur les crêtes
+        endommagent vos <b>moteurs</b>, votre <b>direction</b> et votre <b>coque</b>. Un glisseur abîmé accélère moins,
         tourne moins bien et plafonne en vitesse. Des pannes surviennent aussi en course (incendie moteur,
         direction bloquée, injecteur encrassé). Maintenez la touche de réparation : pendant ce temps la poussée est limitée
-        et le boost indisponible. Si la coque tombe à zéro, le pod explose et repart quelques secondes plus tard.</p>
+        et le boost indisponible. Si la coque tombe à zéro, le glisseur explose et repart quelques secondes plus tard.</p>
       <div class="row-btns"><button id="help-close" class="big">Compris !</button></div>
     </div>
   </div>
@@ -218,7 +218,7 @@
     <div class="dialog wide">
       <h2 id="results-title">Résultats</h2>
       <table class="results">
-        <thead><tr><th>#</th><th>Pilote</th><th>Podracer</th><th>Temps</th><th>Meilleur tour</th></tr></thead>
+        <thead><tr><th>#</th><th>Pilote</th><th>Glisseur</th><th>Temps</th><th>Meilleur tour</th></tr></thead>
         <tbody id="results-body"></tbody>
       </table>
       <div class="row-btns">

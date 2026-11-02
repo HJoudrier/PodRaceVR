@@ -48,7 +48,7 @@ export class DamageSystem {
       topSpeed: (0.5 + 0.5 * avg) * hullF,
       steer: 0.35 + 0.65 * (h.steering / 100),
       steerBias: this.jam * 0.38,
-      imbalance: eL - eR,     // >0 : moteur gauche plus fort -> le pod tire à droite
+      imbalance: eL - eR,     // >0 : moteur gauche plus fort -> le glisseur tire à droite
       canBoost: h.engineL > 25 && h.engineR > 25 && !this.fire.engineL && !this.fire.engineR,
     };
   }
@@ -59,13 +59,13 @@ export class DamageSystem {
 
   hullFraction() { return this.health.hull / 100; }
 
-  // amount : intensité du choc ; side : -1 gauche, +1 droite, 0 inconnu ; kind : 'wall' | 'blaster' | 'racer' | 'obstacle'
+  // amount : intensité du choc ; side : -1 gauche, +1 droite, 0 inconnu ; kind : 'wall' | 'laser' | 'racer' | 'obstacle'
   applyHit(amount, side = 0, kind = 'wall', time = 0) {
     if (amount <= 0) return;
     const a = amount * this.armorMult;
     const h = this.health;
     h.hull = clamp(h.hull - a * 0.5, 0, 100);
-    const wL = side < 0 ? 3 : 1, wR = side > 0 ? 3 : 1, wS = kind === 'blaster' ? 1.0 : 1.4;
+    const wL = side < 0 ? 3 : 1, wR = side > 0 ? 3 : 1, wS = kind === 'laser' ? 1.0 : 1.4;
     const r = Math.random() * (wL + wR + wS);
     const sys = r < wL ? 'engineL' : r < wL + wR ? 'engineR' : 'steering';
     const pass = 0.55 + 0.45 * (1 - h.hull / 100);

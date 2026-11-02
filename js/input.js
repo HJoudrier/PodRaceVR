@@ -114,7 +114,7 @@ export class Input {
       const sx = Math.abs(stickX(L)) > Math.abs(stickX(R)) ? stickX(L) : stickX(R);
       if (L || R) this.source = 'xr';
       if (this.vrControl === 'leviers') {
-        // deux leviers de poussée : la différence entre les gâchettes fait tourner le pod
+        // deux leviers de poussée : la différence entre les gâchettes fait tourner le glisseur
         leverL = bv(L, 0);
         leverR = bv(R, 0);
         throttle = Math.max(throttle, (leverL + leverR) / 2, Math.max(leverL, leverR) * 0.8);

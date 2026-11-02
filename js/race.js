@@ -126,15 +126,15 @@ export class Race {
     if (racer.isPlayer) this.shake = Math.max(this.shake || 0, 0.15);
   }
 
-  onBlasterHit(racer, point, boltVel) {
+  onLaserHit(racer, point, boltVel) {
     const r = racer.right(_v);
     const side = Math.sign((point.x - racer.pos.x) * r.x + (point.z - racer.pos.z) * r.z) || 1;
-    racer.damage.applyHit(11 + Math.random() * 7, side, 'blaster', this.time);
+    racer.damage.applyHit(11 + Math.random() * 7, side, 'laser', this.time);
     this.effects.sparks(point, null, 25, 30);
     this.effects.flash(point, 0xff6a30, 7);
     if (racer.isPlayer) {
       if (this.haptic) this.haptic([45, 30, 45]);
-      this.audio.blasterHit();
+      this.audio.laserHit();
       this.shake = Math.max(this.shake || 0, 0.6);
       this.flashDamage = 0.6;
       const msg = `TOUCHÉ PAR UN ${this.raiders.name || 'PILLARD'} !`;
@@ -153,8 +153,8 @@ export class Race {
       this.audio.explosion(racer.pos);
       if (racer.isPlayer) {
         if (this.haptic) this.haptic([200, 80, 300]);
-        this.hud.message('POD DÉTRUIT', 'Les droïdes réparent… retour en piste', 2.8, 'danger');
-        this.cockpitHud.message('POD DÉTRUIT', 'Retour en piste…', 2.8, '#ff6644');
+        this.hud.message('GLISSEUR DÉTRUIT', "L'équipe de dépannage répare… retour en piste", 2.8, 'danger');
+        this.cockpitHud.message('GLISSEUR DÉTRUIT', 'Retour en piste…', 2.8, '#ff6644');
       }
     }
   }
@@ -201,7 +201,7 @@ export class Race {
     }
     if (racer.isPlayer) {
       if (this.haptic) this.haptic([120, 60, 200]);
-      const sub = w ? (w.lava ? 'Englouti par la lave…' : 'Plouf ! Les droïdes vous repêchent…') : 'Trop lent pour franchir le saut…';
+      const sub = w ? (w.lava ? 'Englouti par la lave…' : "Plouf ! L'équipe de secours vous repêche…") : 'Trop lent pour franchir le saut…';
       this.hud.message('CHUTE !', sub, 2.2, 'danger');
       this.cockpitHud.message('CHUTE !', sub, 2.2, '#ff6644');
     }
